@@ -3,33 +3,9 @@ import { expect } from "chai";
 import { foo } from "../src/implementation";
 import type { requestUrl } from "obsidian";
 import { fetchRequestUrlWrapper } from "./obsidian-wrappers";
+import { postArticle } from "src/medium-gateway";
 
 type RequestUrl = typeof requestUrl;
-
-const postArticle = async (
-  input: { apiKey: string },
-  requestUrl: RequestUrl,
-) => {
-  const body = {
-    article: {
-      title: "Hello, World!",
-      published: false,
-      body_markdown: "Hello DEV, this is my first post",
-      tags: [],
-      series: "Hello series",
-    },
-  };
-  const response = await requestUrl({
-    url: "https://dev.to/api/articles",
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "api-key": input.apiKey,
-    },
-    contentType: "application/json",
-  });
-  return response.json;
-};
 
 describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
   before(async () => {
@@ -41,7 +17,7 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
      */
   });
 
-  it.only("Dev feedback - explore creating a rich article", async () => {
+  it.skip("Dev feedback - explore creating a rich article", async () => {
     const articleId = 1875096;
     const body = {
       article: {
@@ -67,12 +43,13 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
   });
 
   it.skip("Dev feedback tool only - Get my articles", async () => {
-    const response = await fetchRequestUrlWrapper({
+    const response = fetchRequestUrlWrapper({
       url: "https://dev.to/api/articles/me/unpublished",
       headers: {
         // "api-key": process.env.DEV_API_KEY as string,
       },
     });
+    const json = await response.json;
     console.log(response);
   });
 
