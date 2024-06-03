@@ -43,9 +43,10 @@ const putArticle = async (
   const response = await requestUrl({
     url: `https://dev.to/api/articles/${articleId}`,
     method: "PUT",
+    throw: false,
     body: JSON.stringify(body),
     headers: {
-      "api-key": process.env.DEV_API_KEY as string,
+      "api-key": apiKey,
     },
     contentType: "application/json",
   });
@@ -75,6 +76,9 @@ export default class MediumGateway {
   }
 
   async updateArticle(input: { id: number; article: Article }) {
-    throw new Error("Not implemented yet");
+    return await putArticle(
+      { apiKey: this.apiKey, article: input.article, articleId: input.id },
+      this.requestUrl,
+    );
   }
 }
