@@ -2,11 +2,11 @@
 
 Obsidian plugin that allows you to publish notes as articles on dev.to
 
-> ![NOTE]
+> [!NOTE]
 > Articles are created in a draft state on DEV, so you can properly review them
 > before making them public.
 
-> ![CAUTION]
+> [!CAUTION]
 > This plugin stores your DEV api key unencrypted in the plugin configuration
 > file, stored as part of your obsidian vault. If you don't fully understand the
 > implications of this, don't use this plugin.
