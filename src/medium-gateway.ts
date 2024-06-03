@@ -44,7 +44,7 @@ const putArticle = async (
     url: `https://dev.to/api/articles/${articleId}`,
     method: "PUT",
     throw: false,
-    body: JSON.stringify(body),
+    body: JSON.stringify({ article: { body_markdown: article.markdown } }),
     headers: {
       "api-key": apiKey,
     },
