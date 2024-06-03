@@ -20,6 +20,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/chai": "^4.3.14",
+		"@types/fetch-mock": "^7.3.8",
 		"@types/mocha": "^10.0.6",
 		"@types/node": "^16.11.6",
 		"@types/sinon": "^17.0.3",
@@ -29,6 +30,7 @@
 		"builtin-modules": "3.3.0",
 		"chai": "^4.4.1",
 		"esbuild": "0.17.3",
+		"fetch-mock": "^9.11.0",
 		"mocha": "^10.4.0",
 		"obsidian": "latest",
 		"sinon": "^17.0.1",

@@ -1,4 +1,8 @@
-import type { requestUrl } from "obsidian";
+import type {
+  requestUrl,
+  RequestUrlResponse,
+  RequestUrlResponsePromise,
+} from "obsidian";
 
 type RequestUrl = typeof requestUrl;
 
@@ -35,29 +39,59 @@ export class RequestUrlWrapper {
  * I invest some time in building the tooling providing faster feedback, so
  * as to not break the flow
  */
-export const fetchRequestUrlWrapper = async (
+export const fetchRequestUrlWrapper: RequestUrl = (
   options: Parameters<RequestUrl>[0],
-): Promise<ReturnType<RequestUrl>> => {
-  if (typeof options === "string") {
-    return fetchRequestUrlWrapper({ url: options });
-  }
-  const headers = {
-    ...options.headers,
-    ...(options.contentType && { "Content-Type": options.contentType }),
+): RequestUrlResponsePromise => {
+  const inner = async () => {
+    if (typeof options === "string") {
+      return fetchRequestUrlWrapper({ url: options });
+    }
+    const headers = {
+      ...options.headers,
+      ...(options.contentType && { "Content-Type": options.contentType }),
+    };
+    const fetchOptions = {
+      method: options.method || "GET",
+      headers,
+      body: options.body,
+    };
+    const fetchResponse = await fetch(options.url, fetchOptions);
+    const throwOnError = options.throw ?? true; // Default value in obsidian
+    if (!fetchResponse.ok && throwOnError) {
+      throw new Error("Error from server");
+    }
+    type RequestUrlReturnType = Awaited<ReturnType<RequestUrl>>;
+    const responseHeaders: Record<string, string> = {};
+    fetchResponse.headers.forEach((val, key) => (responseHeaders[key] = val));
+    const json = await fetchResponse.json();
+    const result: RequestUrlResponse = {
+      get arrayBuffer(): ArrayBuffer {
+        throw new Error("We don't use this");
+      },
+      headers: responseHeaders,
+      json,
+      status: fetchResponse.status,
+      get text(): string {
+        throw new Error("We don't use this");
+      },
+    };
+    return result;
   };
-  const fetchOptions = {
-    method: options.method || "GET",
-    headers,
-    body: options.body,
+  const requestUrlRespone = inner();
+  const result: RequestUrlResponsePromise = {
+    ...requestUrlRespone,
+    get json() {
+      return requestUrlRespone.then((x) => x.json);
+    },
+    get arrayBuffer(): Promise<ArrayBuffer> {
+      throw new Error("Not supported");
+    },
+    get text(): Promise<string> {
+      throw new Error("Not supported");
+    },
   };
-  const fetchResponse = await fetch(options.url, fetchOptions);
-  const throwOnError = options.throw ?? true; // Default value in obsidian
-  if (!fetchResponse.ok && throwOnError) {
-    throw new Error("Error from server");
-  }
-  type RequestUrlReturnType = Awaited<ReturnType<RequestUrl>>;
-  const responseHeaders: Record<string, string> = {};
-  fetchResponse.headers.forEach((val, key) => (responseHeaders[key] = val));
+  return result;
+  /**
   const json = await fetchResponse.json();
   return {
     get arrayBuffer(): ArrayBuffer {
@@ -70,4 +104,5 @@ export const fetchRequestUrlWrapper = async (
       throw new Error("We don't use this");
     },
   };
+    */
 };
