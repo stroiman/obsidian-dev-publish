@@ -1,9 +1,9 @@
 {
   "id": "publish-to-dev",
   "name": "Publish to DEV",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "minAppVersion": "0.15.0",
-  "description": "Write articles in Obsidian, publish and update on dev.to",
+  "description": "Write notes in Obsidian, publish and update them as articles on DEV (https://dev.to)",
   "author": "Peter Strøiman",
   "authorUrl": "https://stroiman.com",
   "fundingUrl": "https://www.buymeacoffee.com/stroiman",

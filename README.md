@@ -1,16 +1,23 @@
-# Obsidian publish note to dev.to
+# Obsidian publish note to DEV (dev.to)
 
 Obsidian plugin that allows you to publish notes as articles on dev.to
 
+> ![NOTE]
+> Articles are created in a draft state on DEV, so you can properly review them
+> before making them public.
+
 > ![CAUTION]
-> This plugin stores your dev.to API key unencrypted in the plugin configuration
+> This plugin stores your DEV api key unencrypted in the plugin configuration
 > file, stored as part of your obsidian vault. If you don't fully understand the
 > implications of this, don't use this plugin.
 >
 > This is important, I will repeat: Don't use this plugin if you don't fully
 > understand the security implications!
 
-This is very early release, but I think it _can_ be used, but you have to change
+This is very early release, but I think it _can_ be used with some caveats. E.g.
+you have to change the title of the article created.
+
+The list of missing features
 
 ## Follow along in the development process
 
@@ -42,7 +49,7 @@ happened next was:
 1. I changed the hardcoded title of created articles.
 1. I changed the update function to only update the markdown (so a title change,
    and/or publish status/tags in DEV does not get overriden by an update).
-1. I added the ability to set the API key in the settings, with warning messages.
+1. I added the ability to set the API key in the settings, with a warning.
 
 ## Support this work
 
