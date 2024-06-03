@@ -7,9 +7,19 @@
  *      obsidian properties that we do not need or care about.
  */
 
+import type { FrontMatterInfo } from "obsidian";
+
 export interface GenericFileManager<TFile> {
   processFrontMatter(
     file: TFile,
     fn: (frontmatter: any) => void,
   ): Promise<void>;
+}
+
+export interface GenericVault<TFile> {
+  read(file: TFile): Promise<string>;
+}
+
+export interface GetFrontMatterInfo {
+  getFrontMatterInfo(contents: string): FrontMatterInfo;
 }

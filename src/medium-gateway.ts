@@ -1,17 +1,23 @@
 import type { requestUrl } from "obsidian";
 type RequestUrl = typeof requestUrl;
 
+type Article = {
+  title: string;
+  markdown: string;
+  // eventually tags - from frontmatter
+};
+
 export const postArticle = async (
-  input: { apiKey: string },
+  input: { apiKey: string; article: Article },
   requestUrl: RequestUrl,
 ) => {
   const body = {
     article: {
-      title: "Hello, World!",
+      title: input.article.title,
       published: false,
-      body_markdown: "Hello DEV, this is my first post",
+      body_markdown: input.article.markdown,
       tags: [],
-      series: "Hello series",
+      series: "Hello series", // TODO, what about series?
     },
   };
   const response = await requestUrl({
@@ -31,10 +37,12 @@ type CreateArticleResult = {
 };
 
 export default class MediumGateway {
-  async createArticle(): Promise<CreateArticleResult> {
+  async createArticle(input: {
+    article: Article;
+  }): Promise<CreateArticleResult> {
     throw new Error("Not implemented yet");
   }
-  async updateArticle(input: { id: number }) {
+  async updateArticle(input: { id: number; article: Article }) {
     throw new Error("Not implemented yet");
   }
 }
