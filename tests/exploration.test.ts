@@ -53,16 +53,16 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
     console.log(response);
   });
 
-  it.skip("Dev feedback tool only - Should create an article on dev.to", async () => {
-    console.log("FOO");
-    const response = await postArticle(
-      {
-        apiKey: process.env.DEV_API_KEY as string,
-      },
-      fetchRequestUrlWrapper,
-    );
-    console.log("RESPONSE", response);
-  });
+  // it.skip("Dev feedback tool only - Should create an article on dev.to", async () => {
+  //   console.log("FOO");
+  //   const response = await postArticle(
+  //     {
+  //       apiKey: process.env.DEV_API_KEY as string,
+  //     },
+  //     fetchRequestUrlWrapper,
+  //   );
+  //   console.log("RESPONSE", response);
+  // });
 });
 
 /*
