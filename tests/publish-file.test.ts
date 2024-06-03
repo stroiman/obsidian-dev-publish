@@ -1,14 +1,9 @@
 import sinon, { match } from "sinon";
+import { GenericFileManager } from "src/interfaces";
 import MediumGateway from "src/medium-gateway";
+import Publisher from "src/publisher";
 
 type DummyFile = { frontmatter: any };
-
-interface GenericFileManager<TFile> {
-  processFrontMatter(
-    file: TFile,
-    fn: (frontmatter: any) => void,
-  ): Promise<void>;
-}
 
 class FileManager implements GenericFileManager<DummyFile> {
   processFrontMatter(file: DummyFile, fn: (frontmatter: any) => void) {
@@ -26,35 +21,6 @@ const createTestTFile = (input?: Partial<DummyFile>): DummyFile => ({
   frontmatter: {},
   ...input,
 });
-
-class Publisher<TFile> {
-  fileManager: GenericFileManager<TFile>;
-  gateway: MediumGateway;
-  constructor(fileManager: GenericFileManager<TFile>, gateway: MediumGateway) {
-    this.fileManager = fileManager;
-    this.gateway = gateway;
-  }
-
-  async publish(file: TFile) {
-    const mediumId = await new Promise((resolve, reject) =>
-      this.fileManager
-        .processFrontMatter(file, (frontmatter) => {
-          const mediumId = frontmatter["medium-article-id"];
-          // TODO: What if it's not a number?
-          resolve(mediumId);
-        })
-        .catch((err) => reject(err)),
-    );
-    if (typeof mediumId === "number") {
-      await this.gateway.updateArticle({ id: mediumId });
-    } else {
-      const result = await this.gateway.createArticle();
-      this.fileManager.processFrontMatter(file, (frontmatter) => {
-        frontmatter["medium-article-id"] = result.id;
-      });
-    }
-  }
-}
 
 describe("Publish a file from a TFile structure", () => {
   // The TFile is what I have as an abstraction in Obsidian for the currently
