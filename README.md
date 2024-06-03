@@ -1,6 +1,6 @@
-# Obsidian publish note to DEV (dev.to)
+# Obsidian publish note to DEV
 
-Obsidian plugin that allows you to publish notes as articles on dev.to
+Obsidian plugin that allows you to publish notes as articles on DEV (https://dev.to)
 
 > [!NOTE]
 > Articles are created in a draft state on DEV, so you can properly review them
