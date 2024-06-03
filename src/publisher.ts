@@ -5,6 +5,8 @@ import {
 } from "./interfaces";
 import MediumGateway from "./medium-gateway";
 
+const ARTICLE_ID_KEY = "dev-article-id";
+
 export default class Publisher<TFile> {
   fileManager: GenericFileManager<TFile>;
   gateway: MediumGateway;
@@ -27,7 +29,7 @@ export default class Publisher<TFile> {
     const mediumId = await new Promise((resolve, reject) =>
       this.fileManager
         .processFrontMatter(file, (frontmatter) => {
-          const mediumId = frontmatter["medium-article-id"];
+          const mediumId = frontmatter[ARTICLE_ID_KEY];
           // TODO: What if it's not a number?
           resolve(mediumId);
         })
@@ -48,7 +50,7 @@ export default class Publisher<TFile> {
     } else {
       const result = await this.gateway.createArticle({ article });
       this.fileManager.processFrontMatter(file, (frontmatter) => {
-        frontmatter["medium-article-id"] = result.id;
+        frontmatter[ARTICLE_ID_KEY] = result.id;
       });
     }
   }

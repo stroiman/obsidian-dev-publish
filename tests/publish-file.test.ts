@@ -26,7 +26,7 @@ describe("Publish a file from a TFile structure", () => {
 
   it("Should _update_ if the file has already been published", async () => {
     const obsidianFile = createFakeFile({
-      frontmatter: { "medium-article-id": 42 },
+      frontmatter: { "dev-article-id": 42 },
     });
     await publisher.publish(obsidianFile);
     gateway.updateArticle.should.have.been.calledOnceWith(
@@ -53,7 +53,7 @@ describe("Publish a file from a TFile structure", () => {
 
     it("Should update the frontmatter", async () => {
       await publisher.publish(obsidianFile);
-      obsidianFile.frontmatter["medium-article-id"].should.equal(43);
+      obsidianFile.frontmatter["dev-article-id"].should.equal(43);
     });
 
     describe("Contents does not contains frontmatter", () => {
