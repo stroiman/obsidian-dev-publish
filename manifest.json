@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+  "id": "publish-to-dev",
+  "name": "Publish to DEV",
+  "version": "0.1.0",
+  "minAppVersion": "0.15.0",
+  "description": "Write articles in Obsidian, publish and update on dev.to",
+  "author": "Peter Strøiman",
+  "authorUrl": "https://stroiman.com",
+  "fundingUrl": "https://www.buymeacoffee.com/stroiman",
+  "isDesktopOnly": false
 }
