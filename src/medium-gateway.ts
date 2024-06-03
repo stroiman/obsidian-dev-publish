@@ -25,3 +25,16 @@ export const postArticle = async (
   });
   return response.json;
 };
+
+type CreateArticleResult = {
+  id: number;
+};
+
+export default class MediumGateway {
+  async createArticle(): Promise<CreateArticleResult> {
+    throw new Error("Not implemented yet");
+  }
+  async updateArticle(input: { id: number }) {
+    throw new Error("Not implemented yet");
+  }
+}

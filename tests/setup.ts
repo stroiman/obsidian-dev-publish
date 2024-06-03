@@ -31,7 +31,9 @@ import sinonChai from "sinon-chai";
 // You can add more plugins, or write your own.
 chai.use(sinonChai);
 
+chai.should();
+
 // Reset all mocking after each test.
 afterEach(() => {
-	sinon.reset();
+  sinon.reset();
 });
