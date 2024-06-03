@@ -42,7 +42,7 @@ export default class Publisher<TFile> {
       ? fileContents.substring(frontmatterInfo.contentStart)
       : fileContents;
     const article = {
-      title: "Foo",
+      title: "Article from Obsidian - please rename before publishing",
       markdown: markdown.trim(),
     };
     if (typeof mediumId === "number") {
