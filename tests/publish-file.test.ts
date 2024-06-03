@@ -3,7 +3,12 @@ import { GenericFileManager } from "src/interfaces";
 import MediumGateway from "src/medium-gateway";
 import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
-import { FakeFile, FakeFileManager, FakeVault } from "./fakes";
+import {
+  FakeFile,
+  FakeFileManager,
+  FakeGetFrontMatterInfo,
+  FakeVault,
+} from "./fakes";
 
 describe("Publish a file from a TFile structure", () => {
   let gateway: sinon.SinonStubbedInstance<MediumGateway>;
@@ -11,7 +16,12 @@ describe("Publish a file from a TFile structure", () => {
 
   beforeEach(() => {
     gateway = sinon.createStubInstance(MediumGateway);
-    publisher = new Publisher(new FakeFileManager(), gateway, new FakeVault());
+    publisher = new Publisher(
+      new FakeFileManager(),
+      gateway,
+      new FakeVault(),
+      new FakeGetFrontMatterInfo(),
+    );
   });
 
   it("Should _update_ if the file has already been published", async () => {
@@ -46,9 +56,26 @@ describe("Publish a file from a TFile structure", () => {
       obsidianFile.frontmatter["medium-article-id"].should.equal(43);
     });
 
-    describe("Contents does not containt frontmatter", () => {
+    describe("Contents does not contains frontmatter", () => {
       beforeEach(() => {
         obsidianFile.contents = "# Heading\n\n Foo bar";
+      });
+
+      it("Should publish the entire file contents", async () => {
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledOnceWith(
+          match({
+            article: {
+              markdown: "# Heading\n\n Foo bar",
+            },
+          }),
+        );
+      });
+    });
+
+    describe("Contents contain frontmatter", () => {
+      beforeEach(() => {
+        obsidianFile.contents = "---\nfoo: Bar\n---\n# Heading\n\n Foo bar";
       });
 
       it("Should publish the entire file contents", async () => {

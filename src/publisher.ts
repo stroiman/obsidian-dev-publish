@@ -15,12 +15,12 @@ export default class Publisher<TFile> {
     fileManager: GenericFileManager<TFile>,
     gateway: MediumGateway,
     vault: GenericVault<TFile>,
-    // getFrontMatterInfo: GetFrontMatterInfo,
+    getFrontMatterInfo: GetFrontMatterInfo,
   ) {
     this.fileManager = fileManager;
     this.gateway = gateway;
     this.vault = vault;
-    // this.getFrontMatterInfo = getFrontMatterInfo;
+    this.getFrontMatterInfo = getFrontMatterInfo;
   }
 
   async publish(file: TFile) {
@@ -33,9 +33,15 @@ export default class Publisher<TFile> {
         })
         .catch((err) => reject(err)),
     );
+    const fileContents = await this.vault.read(file);
+    const frontmatterInfo =
+      await this.getFrontMatterInfo.getFrontMatterInfo(fileContents);
+    const markdown = frontmatterInfo.exists
+      ? fileContents.substring(frontmatterInfo.contentStart)
+      : fileContents;
     const article = {
       title: "Foo",
-      markdown: await this.vault.read(file),
+      markdown: markdown.trim(),
     };
     if (typeof mediumId === "number") {
       await this.gateway.updateArticle({ id: mediumId, article });

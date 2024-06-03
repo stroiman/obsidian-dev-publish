@@ -7,5 +7,6 @@ import { FakeFile } from "./fakes";
 
 export const createFakeFile = (input?: Partial<FakeFile>): FakeFile => ({
   frontmatter: {},
+  contents: "",
   ...input,
 });
