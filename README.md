@@ -15,9 +15,30 @@ Obsidian plugin that allows you to publish notes as articles on DEV (https://dev
 > understand the security implications!
 
 This is very early release, but I think it _can_ be used with some caveats. E.g.
-you have to change the title of the article created.
+you have to change the title of the article created; and images are not handled.
 
-The list of missing features
+## Missing features
+
+### Essential
+
+- Properly handle the title
+- Handle medialinks. If the target Obsidian note has a `url` metadata field,
+  that should become the link target.
+- Handle images.
+- Allows the user to specify tags (the DEV tags would probably be kept separate
+  from Obsidian tags initially, but perhaps user configurable over time).
+- Securely handle API keys through system keychain/secure storage (although some
+  research seems to indicate that this is not possible).
+
+So unfortunately, one essential feature seems to be impossible, let me know if
+you happen to know how a way to securely handle secrets from Obsidian plugins.
+
+### Nice to have
+
+- Control published state from Obsidian. Right now, new articles are created as
+  draft, allowing you to control everything before publishing.
+- Set a `dev-url` property in the frontmatter, linking to the published article.
+- Suggestion from @Rooyca: Autopublish - configurable by the user
 
 ## Follow along in the development process
 
