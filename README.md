@@ -46,7 +46,7 @@ This was developed mostly 100% while live coding on
 [twitch.tv/stroiman](https://twitch.tv/stroiman).
 
 I will make the videos available on YouTube for posterity, just cutting out
-pauses when I had to take a break, or answer the door.
+pauses when I had to take a break, or the door bell was ringing.
 
 The first episode was stopped, when I was ready to do a full test of the plugin
 in obsidian, and could not avoid exposing my API key on the stream. What
@@ -54,14 +54,12 @@ happened next was:
 
 1. I hardcoded my API key in the main.ts file, and publishing a new article
    worked the first time I tried it.
-1. Before I could try, I had trouble finding my plugin in the list of community
-   plugins. This was because I never changed the plugin id, causing it to
-   collide with another experiment already present in my plugins folder.
-   Assigning a new unique the id made the plugin available.
 1. Updating an article did not work. The `update` method, which had been mocked
    in tests, was not implemented. The actual code to make the PUT request _was_
    in place, it was just the glue, binding the production code to the obsidian
    `requestUrl` method that was missing.
+1. I updated the manifest to give the plugin a unique ID and helpful name and
+   description.
 1. Once that was fixed, updating articles worked as well.
 1. I realised that the frontmatter property used to save the id of a published
    article was called `medium-article-id`, which I renamed to `dev-article-id`.
