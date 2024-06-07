@@ -45,4 +45,7 @@ describe.only("Update the url and canonical-url in frontmatter", () => {
       "dev-canonical-url": "https://example.com/articles/hello-world",
     });
   });
+
+  it("Should update the URL after an update");
+  it("Should update the URL after an sync?");
 });

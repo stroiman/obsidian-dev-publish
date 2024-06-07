@@ -69,6 +69,35 @@ let assertIsObject = (input: unknown): input is {} => {
   return typeof input === "object" && input !== null;
 };
 
+type Validator<T> = (input: unknown) => input is T;
+type GetValidatedType<T extends Validator<any>> =
+  T extends Validator<infer U> ? U : never;
+
+type GenericObjectValidator = { [key: string]: Validator<any> };
+type GetValidatedObjectType<T extends GenericObjectValidator> = {
+  [key in keyof T]: GetValidatedType<T[key]>;
+};
+
+const isNumber = (x: unknown): x is number => typeof x === "number";
+const isString = (x: unknown): x is string => typeof x === "string";
+
+const isObject = <T extends GenericObjectValidator>(
+  input: unknown,
+  spec: T,
+): input is GetValidatedObjectType<T> => {
+  if (typeof input !== "object" || input === null) {
+    return false;
+  }
+  for (const key of Object.keys(spec)) {
+    const actual = (input as any)[key] as unknown;
+    const validator = spec[key];
+    if (!validator(actual)) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export default class MediumGateway {
   apiKey: string;
   requestUrl: MakeHttpRequest;
@@ -85,21 +114,17 @@ export default class MediumGateway {
       { apiKey: this.apiKey, article: input.article },
       this.requestUrl,
     );
-    if (!assertIsObject(temp)) {
-      throw new Error("Bad response from Medium");
+    if (
+      !isObject(temp, {
+        id: isNumber,
+        url: isString,
+        canonical_url: isString,
+      })
+    ) {
+      throw new Error("Bad response");
     }
-    if ("id" in temp && typeof temp["id"] === "number") {
-      if ("url" in temp && typeof temp["url"] === "string") {
-        if (
-          "canonical_url" in temp &&
-          typeof temp["canonical_url"] === "string"
-        ) {
-          const { id, url, canonical_url } = temp;
-          return { id, url, canonicalUrl: canonical_url };
-        }
-      }
-    }
-    throw new Error("Bad response");
+    const { id, url, canonical_url } = temp;
+    return { id, url, canonicalUrl: canonical_url };
   }
 
   async updateArticle(input: { id: number; article: Article }) {
