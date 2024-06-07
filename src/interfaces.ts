@@ -31,14 +31,16 @@ type Pos = {
   end: Loc;
 };
 
-type HeadingCache = Omit<obsidian.HeadingCache, "position"> & { position: Pos };
+export type HeadingCache = Omit<obsidian.HeadingCache, "position"> & {
+  position: Pos;
+};
 
 export type CachedMetadata = {
   headings?: HeadingCache[];
 };
 
 export interface GenericMetadataCache<TFile> {
-  getFileCache(file: TFile): CachedMetadata;
+  getFileCache(file: TFile): CachedMetadata | null;
 }
 
 export interface GenericApp<TFile> {

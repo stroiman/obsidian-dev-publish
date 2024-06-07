@@ -42,7 +42,7 @@ export default class Publisher<TFile> {
     );
     const fileContents = await this.vault.read(file);
     const metadataCache = this.app.metadataCache.getFileCache(file);
-    const h1 = metadataCache.headings?.find((x) => x.level === 1);
+    const h1 = metadataCache?.headings?.find((x) => x.level === 1);
     const dataAfterHeading = h1
       ? fileContents.substring(h1.position.end.offset)
       : fileContents;

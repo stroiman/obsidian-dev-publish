@@ -1,6 +1,6 @@
 import sinon, { match } from "sinon";
 import { GenericFileManager } from "src/interfaces";
-import MediumGateway from "src/medium-gateway";
+import MediumGateway, { CreateArticleResult } from "src/medium-gateway";
 import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
 import {
@@ -10,6 +10,13 @@ import {
   FakeGetFrontMatterInfo,
   FakeVault,
 } from "./fakes";
+
+const createPostArticleResponse = (input?: Partial<CreateArticleResult>) => ({
+  id: 1,
+  url: "",
+  canonicalUrl: "",
+  ...input,
+});
 
 describe("Publish a file from a TFile structure", () => {
   let gateway: sinon.SinonStubbedInstance<MediumGateway>;
@@ -40,7 +47,7 @@ describe("Publish a file from a TFile structure", () => {
     let obsidianFile: FakeFile;
 
     beforeEach(() => {
-      gateway.createArticle.resolves({ id: 43 });
+      gateway.createArticle.resolves(createPostArticleResponse({ id: 43 }));
       obsidianFile = createFakeFile({
         frontmatter: {},
       });

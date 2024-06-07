@@ -53,7 +53,7 @@ const putArticle = async (
   const response_body = await response.json;
 };
 
-type CreateArticleResult = {
+export type CreateArticleResult = {
   id: number;
   url: string;
   canonicalUrl: string;

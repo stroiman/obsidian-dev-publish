@@ -43,7 +43,7 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
   });
 
   it.skip("Dev feedback tool only - Get my articles", async () => {
-    const response = fetchRequestUrlWrapper({
+    const response = await fetchRequestUrlWrapper({
       url: "https://dev.to/api/articles/me/unpublished",
       headers: {
         // "api-key": process.env.DEV_API_KEY as string,
