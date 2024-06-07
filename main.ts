@@ -15,16 +15,16 @@ import Publisher from "src/publisher";
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
+interface DevPublishPluginSessings {
   apiKey: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: DevPublishPluginSessings = {
   apiKey: "",
 };
 
-export default class MyPlugin extends Plugin {
-  settings: MyPluginSettings;
+export default class DevPublishPlugin extends Plugin {
+  settings: DevPublishPluginSessings;
 
   async onload() {
     await this.loadSettings();
@@ -54,7 +54,7 @@ export default class MyPlugin extends Plugin {
     });
 
     // This adds a settings tab so the user can configure various aspects of the plugin
-    this.addSettingTab(new SampleSettingTab(this.app, this));
+    this.addSettingTab(new DevPublishSettingTab(this.app, this));
 
     // If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
     // Using this function will automatically remove the event listener when this plugin is disabled.
@@ -79,10 +79,10 @@ export default class MyPlugin extends Plugin {
   }
 }
 
-class SampleSettingTab extends PluginSettingTab {
-  plugin: MyPlugin;
+class DevPublishSettingTab extends PluginSettingTab {
+  plugin: DevPublishPlugin;
 
-  constructor(app: App, plugin: MyPlugin) {
+  constructor(app: App, plugin: DevPublishPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
