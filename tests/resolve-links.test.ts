@@ -28,3 +28,19 @@ it("Should replace valid medialinks with URLs", async () => {
     "Line1: [File1](https://example.com/file1)\nLine2: File2\nLine3: File3",
   );
 });
+
+it("Should play nice with title replacement", async () => {
+  const fakeApp = new FakeApp();
+  const fileToPublish = fakeApp.fileManager.createFakeFile({
+    frontmatter: { "dev-article-id": 42 },
+  });
+  const path = fileToPublish.path;
+  fileToPublish.contents = `Line1: [[File1]]\n\n# Heading\n\nLine2: [[File2]]\nLine3: [[File3]]`;
+
+  const gateway = sinon.createStubInstance(MediumGateway);
+  const publisher = createPublisher(fakeApp, gateway);
+  await publisher.publish(fileToPublish);
+  gateway.updateArticle.should.have.been.calledOnce;
+  const data = gateway.updateArticle.firstCall.args[0];
+  data.article.markdown.should.equal("Line2: File2\nLine3: File3");
+});

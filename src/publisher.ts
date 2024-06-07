@@ -1,4 +1,5 @@
 import {
+  CachedMetadata,
   GenericApp,
   GenericFileManager,
   GenericMetadataCache,
@@ -36,13 +37,41 @@ export default class Publisher<TFile extends { path: string }> {
     });
   }
 
-  async processLinks(file: TFile, contents: string) {
-    const metadataCache = this.app.metadataCache.getFileCache(file);
-    const links = metadataCache?.links;
+  applyReplaceInstruction(
+    replaceInstructions: { from: number; to: number; replaceString: string }[],
+    contents: string,
+  ) {
+    const flattened = replaceInstructions.filter(
+      (x) => !replaceInstructions.find((y) => x.from > y.from && x.to < y.to),
+    );
+
+    const result = flattened.reduce(
+      (prev, curr) => {
+        const toKeep = contents.substring(prev.lastIndex, curr.from);
+        return {
+          result: [...prev.result, toKeep, curr.replaceString],
+          lastIndex: curr.to,
+        };
+      },
+      { result: [], lastIndex: 0 },
+    );
+    const finalResult = [
+      ...result.result,
+      contents.substring(result.lastIndex),
+    ].join("");
+    return finalResult;
+  }
+
+  async processLinks(
+    file: TFile,
+    contents: string,
+    cachedMetadata: CachedMetadata | null,
+  ) {
+    const links = cachedMetadata?.links;
     if (!links) {
-      return contents;
+      return [];
     }
-    const replaceInstructions = await Promise.all(
+    const tmp = await Promise.all(
       links.map(async (link) => {
         const targetFile = this.app.metadataCache.getFirstLinkpathDest(
           link.link,
@@ -64,34 +93,32 @@ export default class Publisher<TFile extends { path: string }> {
         return [];
       }),
     );
-    const flattened = replaceInstructions.flat();
-    const result = flattened.reduce(
-      (prev, curr) => {
-        const toKeep = contents.substring(prev.lastIndex, curr.from);
-        return {
-          result: [...prev.result, toKeep, curr.replaceString],
-          lastIndex: curr.to,
-        };
-      },
-      { result: [], lastIndex: 0 },
-    );
-    const finalResult = [
-      ...result.result,
-      contents.substring(result.lastIndex),
-    ].join("");
-    return finalResult;
+    return tmp.flat();
   }
 
   async getArticleData(file: TFile) {
-    const fileContents = await this.processLinks(
-      file,
-      await this.vault.read(file),
-    );
+    const originalContents = await this.vault.read(file);
     const metadataCache = this.app.metadataCache.getFileCache(file);
+    const replaceInstructions = await this.processLinks(
+      file,
+      originalContents,
+      metadataCache,
+    );
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
-    const dataAfterHeading = h1
-      ? fileContents.substring(h1.position.end.offset)
-      : fileContents;
+    const h1Instructions = h1
+      ? [
+          {
+            from: 0,
+            to: h1.position.end.offset,
+            replaceString: "",
+          },
+        ]
+      : [];
+
+    const dataAfterHeading = await this.applyReplaceInstruction(
+      [h1Instructions, replaceInstructions].flat(),
+      originalContents,
+    );
     const frontmatterInfo =
       await this.getFrontMatterInfo.getFrontMatterInfo(dataAfterHeading);
     const markdown = (
