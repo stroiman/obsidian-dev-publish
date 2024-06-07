@@ -23,3 +23,8 @@ export interface GenericVault<TFile> {
 export interface GetFrontMatterInfo {
   getFrontMatterInfo(contents: string): FrontMatterInfo;
 }
+
+export interface GenericApp<TFile> {
+  fileManager: GenericFileManager<TFile>;
+  vault: GenericVault<TFile>;
+}

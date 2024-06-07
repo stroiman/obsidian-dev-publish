@@ -1,4 +1,5 @@
 import {
+  GenericApp,
   GenericFileManager,
   GenericVault,
   GetFrontMatterInfo,
@@ -16,14 +17,13 @@ export default class Publisher<TFile> {
   vault: GenericVault<TFile>;
 
   constructor(
-    fileManager: GenericFileManager<TFile>,
+    app: GenericApp<TFile>,
     gateway: MediumGateway,
-    vault: GenericVault<TFile>,
     getFrontMatterInfo: GetFrontMatterInfo,
   ) {
-    this.fileManager = fileManager;
+    this.fileManager = app.fileManager;
     this.gateway = gateway;
-    this.vault = vault;
+    this.vault = app.vault;
     this.getFrontMatterInfo = getFrontMatterInfo;
   }
 

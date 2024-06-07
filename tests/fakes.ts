@@ -1,5 +1,5 @@
 import { FrontMatterInfo } from "obsidian";
-import { GenericFileManager, GenericVault } from "src/interfaces";
+import { GenericApp, GenericFileManager, GenericVault } from "src/interfaces";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
 
 export type FakeFile = {
@@ -47,5 +47,15 @@ export class FakeGetFrontMatterInfo implements GetFrontMatterInfo {
         to: frontmatterLength - 1, // ?? but we don't depend on this
       };
     }
+  }
+}
+
+export class FakeApp implements GenericApp<FakeFile> {
+  fileManager: FakeFileManager;
+  vault: FakeVault;
+
+  constructor() {
+    this.fileManager = new FakeFileManager();
+    this.vault = new FakeVault();
   }
 }

@@ -4,6 +4,7 @@ import MediumGateway from "src/medium-gateway";
 import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
 import {
+  FakeApp,
   FakeFile,
   FakeFileManager,
   FakeGetFrontMatterInfo,
@@ -17,14 +18,10 @@ describe("Update the url and canonical-url in frontmatter", () => {
   let fileManager: FakeFileManager;
 
   beforeEach(() => {
-    fileManager = new FakeFileManager();
+    const app = new FakeApp();
+    fileManager = app.fileManager;
     const gateway = new MediumGateway("API_KEY", fetchRequestUrlWrapper);
-    publisher = new Publisher(
-      fileManager,
-      gateway,
-      new FakeVault(),
-      new FakeGetFrontMatterInfo(),
-    );
+    publisher = new Publisher(app, gateway, new FakeGetFrontMatterInfo());
   });
 
   afterEach(() => {

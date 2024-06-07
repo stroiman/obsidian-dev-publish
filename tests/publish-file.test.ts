@@ -4,6 +4,7 @@ import MediumGateway from "src/medium-gateway";
 import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
 import {
+  FakeApp,
   FakeFile,
   FakeFileManager,
   FakeGetFrontMatterInfo,
@@ -17,9 +18,8 @@ describe("Publish a file from a TFile structure", () => {
   beforeEach(() => {
     gateway = sinon.createStubInstance(MediumGateway);
     publisher = new Publisher(
-      new FakeFileManager(),
+      new FakeApp(),
       gateway,
-      new FakeVault(),
       new FakeGetFrontMatterInfo(),
     );
   });

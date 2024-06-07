@@ -37,9 +37,8 @@ export default class MyPlugin extends Plugin {
         if (view && view.file) {
           if (!checking) {
             const publisher = new Publisher(
-              this.app.fileManager,
+              this.app,
               new MediumGateway(this.settings.apiKey, requestUrl),
-              this.app.vault,
               new GetFrontMatterInfo(),
             );
             publisher.publish(view.file).then(
