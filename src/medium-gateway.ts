@@ -13,7 +13,7 @@ const bodyFromArticle = (article: Article) => ({
     published: false,
     body_markdown: article.markdown,
     tags: [],
-    series: "Hello series", // TODO, what about series?
+    // series: "Hello series", // TODO, what about series?
   },
 });
 
@@ -44,7 +44,7 @@ const putArticle = async (
     url: `https://dev.to/api/articles/${articleId}`,
     method: "PUT",
     throw: false,
-    body: JSON.stringify({ article: { body_markdown: article.markdown } }),
+    body: JSON.stringify(body),
     headers: {
       "api-key": apiKey,
     },
