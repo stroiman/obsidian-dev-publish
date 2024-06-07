@@ -12,6 +12,7 @@ import {
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
 import Publisher from "src/publisher";
 import MediumGateway from "src/medium-gateway";
+import { createFakeFile } from "./factories";
 
 export type FakeFile = {
   path: string;
@@ -19,21 +20,13 @@ export type FakeFile = {
   contents: string;
 };
 
-let nextFileId = 1;
-const createFilePath = () => `file-${nextFileId++}.md`;
-
 export class FakeFileManager implements GenericFileManager<FakeFile> {
   processFrontMatter(file: FakeFile, fn: (frontmatter: any) => void) {
     fn(file.frontmatter);
     return Promise.resolve();
   }
   createFakeFile(data?: Partial<FakeFile>): FakeFile {
-    return {
-      path: createFilePath(),
-      frontmatter: {},
-      contents: "",
-      ...data,
-    };
+    return createFakeFile(data);
   }
 }
 

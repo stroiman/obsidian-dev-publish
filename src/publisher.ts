@@ -12,6 +12,8 @@ const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 
+type ReplaceInstruction = { from: number; to: number; replaceString: string };
+
 export default class Publisher<TFile extends { path: string }> {
   app: GenericApp<TFile>;
   fileManager: GenericFileManager<TFile>;
@@ -38,7 +40,7 @@ export default class Publisher<TFile extends { path: string }> {
   }
 
   applyReplaceInstruction(
-    replaceInstructions: { from: number; to: number; replaceString: string }[],
+    replaceInstructions: ReplaceInstruction[],
     contents: string,
   ) {
     const flattened = replaceInstructions.filter(
@@ -66,7 +68,7 @@ export default class Publisher<TFile extends { path: string }> {
     file: TFile,
     contents: string,
     cachedMetadata: CachedMetadata | null,
-  ) {
+  ): Promise<ReplaceInstruction[]> {
     const links = cachedMetadata?.links;
     if (!links) {
       return [];
@@ -80,9 +82,8 @@ export default class Publisher<TFile extends { path: string }> {
         const frontmatter =
           targetFile && (await this.getFrontMatter(targetFile));
         const url = frontmatter?.url;
-        const replaceString = url
-          ? `[${link.displayText}](${url})`
-          : link.displayText;
+        const displayText = link.displayText || link.link;
+        const replaceString = url ? `[${displayText}](${url})` : displayText;
         return [
           {
             from: link.position.start.offset,

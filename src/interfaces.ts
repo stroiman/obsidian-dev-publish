@@ -35,13 +35,15 @@ export type HeadingCache = Omit<obsidian.HeadingCache, "position"> & {
   position: Pos;
 };
 
+export type LinkCache = {
+  displayText?: string;
+  link: string;
+  original: string;
+  position: Pos;
+};
+
 export type CachedMetadata = {
-  links?: {
-    displayText: string;
-    link: string;
-    original: string;
-    position: Pos;
-  }[];
+  links?: LinkCache[];
   headings?: HeadingCache[];
 };
 
