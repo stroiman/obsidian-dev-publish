@@ -1,6 +1,6 @@
 {
   "name": "obsidian-sample-plugin",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Obsidian plugin to publish obsidian notes to DEV",
   "main": "main.js",
   "scripts": {
