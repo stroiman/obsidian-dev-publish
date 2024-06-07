@@ -12,7 +12,7 @@ import {
 import fetchMock from "fetch-mock";
 import { fetchRequestUrlWrapper } from "./obsidian-wrappers";
 
-describe.only("Update the url and canonical-url in frontmatter", () => {
+describe("Update the url and canonical-url in frontmatter", () => {
   let publisher: Publisher<FakeFile>;
   let fileManager: FakeFileManager;
 
