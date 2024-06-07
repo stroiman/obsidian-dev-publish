@@ -1,6 +1,7 @@
 import {
   GenericApp,
   GenericFileManager,
+  GenericMetadataCache,
   GenericVault,
   GetFrontMatterInfo,
 } from "./interfaces";
@@ -11,6 +12,7 @@ const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 
 export default class Publisher<TFile> {
+  app: GenericApp<TFile>;
   fileManager: GenericFileManager<TFile>;
   gateway: MediumGateway;
   getFrontMatterInfo: GetFrontMatterInfo;
@@ -21,6 +23,7 @@ export default class Publisher<TFile> {
     gateway: MediumGateway,
     getFrontMatterInfo: GetFrontMatterInfo,
   ) {
+    this.app = app;
     this.fileManager = app.fileManager;
     this.gateway = gateway;
     this.vault = app.vault;
@@ -38,13 +41,18 @@ export default class Publisher<TFile> {
         .catch((err) => reject(err)),
     );
     const fileContents = await this.vault.read(file);
-    const frontmatterInfo =
-      await this.getFrontMatterInfo.getFrontMatterInfo(fileContents);
-    const markdown = frontmatterInfo.exists
-      ? fileContents.substring(frontmatterInfo.contentStart)
+    const metadataCache = this.app.metadataCache.getFileCache(file);
+    const h1 = metadataCache.headings?.find((x) => x.level === 1);
+    const dataAfterHeading = h1
+      ? fileContents.substring(h1.position.end.offset)
       : fileContents;
+    const frontmatterInfo =
+      await this.getFrontMatterInfo.getFrontMatterInfo(dataAfterHeading);
+    const markdown = frontmatterInfo.exists
+      ? dataAfterHeading.substring(frontmatterInfo.contentStart)
+      : dataAfterHeading;
     const article = {
-      title: "Article from Obsidian - please rename before publishing",
+      title: h1?.heading || "Heading Missing",
       markdown: markdown.trim(),
     };
     if (typeof mediumId === "number") {

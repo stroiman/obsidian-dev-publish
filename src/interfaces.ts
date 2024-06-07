@@ -8,6 +8,7 @@
  */
 
 import type { FrontMatterInfo } from "obsidian";
+import * as obsidian from "obsidian";
 
 export interface GenericFileManager<TFile> {
   processFrontMatter(
@@ -24,7 +25,24 @@ export interface GetFrontMatterInfo {
   getFrontMatterInfo(contents: string): FrontMatterInfo;
 }
 
+type Loc = Pick<obsidian.Loc, "offset">;
+type Pos = {
+  start: Loc;
+  end: Loc;
+};
+
+type HeadingCache = Omit<obsidian.HeadingCache, "position"> & { position: Pos };
+
+export type CachedMetadata = {
+  headings?: HeadingCache[];
+};
+
+export interface GenericMetadataCache<TFile> {
+  getFileCache(file: TFile): CachedMetadata;
+}
+
 export interface GenericApp<TFile> {
   fileManager: GenericFileManager<TFile>;
   vault: GenericVault<TFile>;
+  metadataCache: GenericMetadataCache<TFile>;
 }

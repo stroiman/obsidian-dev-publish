@@ -1,5 +1,12 @@
-import { FrontMatterInfo } from "obsidian";
-import { GenericApp, GenericFileManager, GenericVault } from "src/interfaces";
+import { FrontMatterInfo, MetadataCache } from "obsidian";
+import {
+  CachedMetadata,
+  GenericApp,
+  GenericFileManager,
+  GenericMetadataCache,
+  GenericVault,
+  HeadingCache,
+} from "src/interfaces";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
 
 export type FakeFile = {
@@ -23,6 +30,33 @@ export class FakeFileManager implements GenericFileManager<FakeFile> {
 export class FakeVault implements GenericVault<FakeFile> {
   async read(file: FakeFile) {
     return Promise.resolve(file.contents);
+  }
+}
+
+export const getMetadata = (data: string): CachedMetadata => {
+  const pattern = /(?:^|\n)(#+) (.*)/g;
+  const matches = data.matchAll(pattern);
+  const headings: HeadingCache[] = [];
+  for (const match of matches) {
+    const index = match.index!;
+    const matchedString = match[0];
+    const addToOffset = matchedString.startsWith("\n") ? 1 : 0;
+    const offset = index + addToOffset;
+    headings.push({
+      heading: match[2].trim(),
+      level: match[1].length,
+      position: {
+        start: { offset },
+        end: { offset: index + matchedString.length },
+      },
+    });
+  }
+  return { headings };
+};
+
+export class FakeMetadataCache implements GenericMetadataCache<FakeFile> {
+  getFileCache(file: FakeFile) {
+    return getMetadata(file.contents);
   }
 }
 
@@ -53,9 +87,11 @@ export class FakeGetFrontMatterInfo implements GetFrontMatterInfo {
 export class FakeApp implements GenericApp<FakeFile> {
   fileManager: FakeFileManager;
   vault: FakeVault;
+  metadataCache: FakeMetadataCache;
 
   constructor() {
     this.fileManager = new FakeFileManager();
     this.vault = new FakeVault();
+    this.metadataCache = new FakeMetadataCache();
   }
 }

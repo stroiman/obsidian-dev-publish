@@ -61,21 +61,22 @@ describe("Publish a file from a TFile structure", () => {
         obsidianFile.contents = "# Heading\n\n Foo bar";
       });
 
-      it("Should publish the entire file contents", async () => {
+      it("Should publish contents after the H1", async () => {
         await publisher.publish(obsidianFile);
         gateway.createArticle.should.have.been.calledOnceWith(
           match({
             article: {
-              markdown: "# Heading\n\n Foo bar",
+              title: "Heading",
+              markdown: "Foo bar",
             },
           }),
         );
       });
     });
 
-    describe("Contents contain frontmatter", () => {
+    describe("Contents contain frontmatter but no heading", () => {
       beforeEach(() => {
-        obsidianFile.contents = "---\nfoo: Bar\n---\n# Heading\n\n Foo bar";
+        obsidianFile.contents = "---\nfoo: Bar\n---\nFoo bar";
       });
 
       it("Should publish the entire file contents", async () => {
@@ -83,7 +84,7 @@ describe("Publish a file from a TFile structure", () => {
         gateway.createArticle.should.have.been.calledOnceWith(
           match({
             article: {
-              markdown: "# Heading\n\n Foo bar",
+              markdown: "Foo bar",
             },
           }),
         );
