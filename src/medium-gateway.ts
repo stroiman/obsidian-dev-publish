@@ -57,11 +57,19 @@ type CreateArticleResult = {
   id: number;
 };
 
+type RequestResponse = {
+  json: Promise<unknown>;
+};
+
+type Request = (
+  input: Parameters<typeof requestUrl>,
+) => Promise<RequestResponse>;
+
 export default class MediumGateway {
   apiKey: string;
-  requestUrl: RequestUrl;
+  requestUrl: Request;
 
-  constructor(apiKey: string, requestUrl: RequestUrl) {
+  constructor(apiKey: string, requestUrl: Request) {
     this.apiKey = apiKey;
     this.requestUrl = requestUrl;
   }
