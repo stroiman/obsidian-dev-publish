@@ -11,7 +11,7 @@ const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 
-export default class Publisher<TFile> {
+export default class Publisher<TFile extends { path: string }> {
   app: GenericApp<TFile>;
   fileManager: GenericFileManager<TFile>;
   gateway: MediumGateway;
@@ -36,8 +36,57 @@ export default class Publisher<TFile> {
     });
   }
 
+  async processLinks(file: TFile, contents: string) {
+    const metadataCache = this.app.metadataCache.getFileCache(file);
+    const links = metadataCache?.links;
+    if (!links) {
+      return contents;
+    }
+    const replaceInstructions = await Promise.all(
+      links.map(async (link) => {
+        const targetFile = this.app.metadataCache.getFirstLinkpathDest(
+          link.link,
+          file.path,
+        );
+        const frontmatter =
+          targetFile && (await this.getFrontMatter(targetFile));
+        const url = frontmatter?.url;
+        const replaceString = url
+          ? `[${link.displayText}](${url})`
+          : link.displayText;
+        return [
+          {
+            from: link.position.start.offset,
+            to: link.position.end.offset,
+            replaceString,
+          },
+        ];
+        return [];
+      }),
+    );
+    const flattened = replaceInstructions.flat();
+    const result = flattened.reduce(
+      (prev, curr) => {
+        const toKeep = contents.substring(prev.lastIndex, curr.from);
+        return {
+          result: [...prev.result, toKeep, curr.replaceString],
+          lastIndex: curr.to,
+        };
+      },
+      { result: [], lastIndex: 0 },
+    );
+    const finalResult = [
+      ...result.result,
+      contents.substring(result.lastIndex),
+    ].join("");
+    return finalResult;
+  }
+
   async getArticleData(file: TFile) {
-    const fileContents = await this.vault.read(file);
+    const fileContents = await this.processLinks(
+      file,
+      await this.vault.read(file),
+    );
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
     const dataAfterHeading = h1

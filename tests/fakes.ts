@@ -71,7 +71,6 @@ const getLinks = (data: string) => {
     /\[\[(?<link>[^\]\|]+)(?:\|(?<alias>[^\]]*))?\]\]/g,
   );
   for (const match of matches) {
-    console.log(match);
     const index = match.index!;
     const link = match.groups!.link;
     const displayText = match.groups!.alias || link;
