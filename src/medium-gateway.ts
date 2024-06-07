@@ -1,4 +1,4 @@
-import { requestUrl } from "obsidian";
+import { requestUrl, RequestUrlParam } from "obsidian";
 type RequestUrl = typeof requestUrl;
 
 type Article = {
@@ -19,7 +19,7 @@ const bodyFromArticle = (article: Article) => ({
 
 export const postArticle = async (
   input: { apiKey: string; article: Article },
-  requestUrl: RequestUrl,
+  requestUrl: MakeHttpRequest,
 ) => {
   const body = bodyFromArticle(input.article);
   const response = await requestUrl({
@@ -36,7 +36,7 @@ export const postArticle = async (
 
 const putArticle = async (
   input: { articleId: number; article: Article; apiKey: string },
-  requestUrl: RequestUrl,
+  requestUrl: MakeHttpRequest,
 ) => {
   const { articleId, article, apiKey } = input;
   const body = bodyFromArticle(article);
@@ -55,21 +55,25 @@ const putArticle = async (
 
 type CreateArticleResult = {
   id: number;
+  url: string;
+  canonicalUrl: string;
 };
 
-type RequestResponse = {
-  json: Promise<unknown>;
+export type HttpResponse = {
+  json: Promise<any>;
 };
 
-type Request = (
-  input: Parameters<typeof requestUrl>,
-) => Promise<RequestResponse>;
+export type MakeHttpRequest = (input: RequestUrlParam) => Promise<HttpResponse>;
+
+let assertIsObject = (input: unknown): input is {} => {
+  return typeof input === "object" && input !== null;
+};
 
 export default class MediumGateway {
   apiKey: string;
-  requestUrl: Request;
+  requestUrl: MakeHttpRequest;
 
-  constructor(apiKey: string, requestUrl: Request) {
+  constructor(apiKey: string, requestUrl: MakeHttpRequest) {
     this.apiKey = apiKey;
     this.requestUrl = requestUrl;
   }
@@ -77,10 +81,25 @@ export default class MediumGateway {
   async createArticle(input: {
     article: Article;
   }): Promise<CreateArticleResult> {
-    return await postArticle(
+    const temp: unknown = await postArticle(
       { apiKey: this.apiKey, article: input.article },
       this.requestUrl,
     );
+    if (!assertIsObject(temp)) {
+      throw new Error("Bad response from Medium");
+    }
+    if ("id" in temp && typeof temp["id"] === "number") {
+      if ("url" in temp && typeof temp["url"] === "string") {
+        if (
+          "canonical_url" in temp &&
+          typeof temp["canonical_url"] === "string"
+        ) {
+          const { id, url, canonical_url } = temp;
+          return { id, url, canonicalUrl: canonical_url };
+        }
+      }
+    }
+    throw new Error("Bad response");
   }
 
   async updateArticle(input: { id: number; article: Article }) {

@@ -1,6 +1,7 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import sinonChai from "sinon-chai";
+import chaiLike from "chai-like";
 
 // Enable the following line to enable the `.should` assertion syntax.
 // chai.should();
@@ -30,6 +31,7 @@ import sinonChai from "sinon-chai";
 // interacting with mocking.
 // You can add more plugins, or write your own.
 chai.use(sinonChai);
+chai.use(chaiLike);
 
 chai.should();
 

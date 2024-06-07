@@ -12,6 +12,12 @@ export class FakeFileManager implements GenericFileManager<FakeFile> {
     fn(file.frontmatter);
     return Promise.resolve();
   }
+  createFakeFile() {
+    return {
+      frontmatter: {},
+      contents: "",
+    };
+  }
 }
 
 export class FakeVault implements GenericVault<FakeFile> {

@@ -6,6 +6,8 @@ import {
 import MediumGateway from "./medium-gateway";
 
 const ARTICLE_ID_KEY = "dev-article-id";
+const ARTICLE_URL_KEY = "dev-url";
+const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 
 export default class Publisher<TFile> {
   fileManager: GenericFileManager<TFile>;
@@ -51,6 +53,8 @@ export default class Publisher<TFile> {
       const result = await this.gateway.createArticle({ article });
       this.fileManager.processFrontMatter(file, (frontmatter) => {
         frontmatter[ARTICLE_ID_KEY] = result.id;
+        frontmatter[ARTICLE_URL_KEY] = result.url;
+        frontmatter[ARTICLE_CANONICAL_URL_KEY] = result.canonicalUrl;
       });
     }
   }

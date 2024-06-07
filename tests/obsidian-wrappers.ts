@@ -61,22 +61,6 @@ export const fetchRequestUrlWrapper = async (
     throw new Error("Error from server");
   }
   type RequestUrlReturnType = Awaited<ReturnType<RequestUrl>>;
-  // Not used yet, makes response headers conform to Obsidian types
-  // const responseHeaders: Record<string, string> = {};
-  // fetchResponse.headers.forEach((val, key) => (responseHeaders[key] = val));
-  // const json = await fetchResponse.json();
-  // const result: RequestUrlResponse = {
-  //   get arrayBuffer(): ArrayBuffer {
-  //     throw new Error("We don't use this");
-  //   },
-  //   headers: responseHeaders,
-  //   json,
-  //   status: fetchResponse.status,
-  //   get text(): string {
-  //     throw new Error("We don't use this");
-  //   },
-  // };
-  // return result;
   const json = fetchResponse.json();
   return { json };
 };
