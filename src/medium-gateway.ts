@@ -43,7 +43,6 @@ const putArticle = async (
   const response = await requestUrl({
     url: `https://dev.to/api/articles/${articleId}`,
     method: "PUT",
-    throw: false,
     body: JSON.stringify(body),
     headers: {
       "api-key": apiKey,
