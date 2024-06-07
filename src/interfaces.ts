@@ -36,11 +36,18 @@ export type HeadingCache = Omit<obsidian.HeadingCache, "position"> & {
 };
 
 export type CachedMetadata = {
+  links?: {
+    displayText: string;
+    link: string;
+    original: string;
+    position: Pos;
+  }[];
   headings?: HeadingCache[];
 };
 
 export interface GenericMetadataCache<TFile> {
   getFileCache(file: TFile): CachedMetadata | null;
+  getFirstLinkpathDest(link: string, path: string): TFile | null;
 }
 
 export interface GenericApp<TFile> {

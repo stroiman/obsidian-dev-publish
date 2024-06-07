@@ -1,3 +1,4 @@
+import sinon from "sinon";
 import { FrontMatterInfo, MetadataCache } from "obsidian";
 import {
   CachedMetadata,
@@ -6,23 +7,32 @@ import {
   GenericMetadataCache,
   GenericVault,
   HeadingCache,
+  LinkCache,
 } from "src/interfaces";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
+import Publisher from "src/publisher";
+import MediumGateway from "src/medium-gateway";
 
 export type FakeFile = {
+  path: string;
   frontmatter: any;
   contents: string;
 };
+
+let nextFileId = 1;
+const createFilePath = () => `file-${nextFileId++}.md`;
 
 export class FakeFileManager implements GenericFileManager<FakeFile> {
   processFrontMatter(file: FakeFile, fn: (frontmatter: any) => void) {
     fn(file.frontmatter);
     return Promise.resolve();
   }
-  createFakeFile() {
+  createFakeFile(data?: Partial<FakeFile>): FakeFile {
     return {
+      path: createFilePath(),
       frontmatter: {},
       contents: "",
+      ...data,
     };
   }
 }
@@ -33,7 +43,7 @@ export class FakeVault implements GenericVault<FakeFile> {
   }
 }
 
-export const getMetadata = (data: string): CachedMetadata => {
+const getHeadings = (data: string): HeadingCache[] => {
   const pattern = /(?:^|\n)(#+) (.*)/g;
   const matches = data.matchAll(pattern);
   const headings: HeadingCache[] = [];
@@ -51,12 +61,60 @@ export const getMetadata = (data: string): CachedMetadata => {
       },
     });
   }
-  return { headings };
+  return headings;
+};
+
+const getLinks = (data: string) => {
+  const links: LinkCache[] = [];
+
+  const matches = data.matchAll(
+    /\[\[(?<link>[^\]\|]+)(?:\|(?<alias>[^\]]*))?\]\]/g,
+  );
+  for (const match of matches) {
+    console.log(match);
+    const index = match.index!;
+    const link = match.groups!.link;
+    const displayText = match.groups!.alias || link;
+    const original = match[0];
+    links.push({
+      link,
+      displayText,
+      original,
+      position: {
+        start: { offset: index },
+        end: { offset: index + original.length },
+      },
+    });
+  }
+  return links;
+};
+
+export const getMetadata = (data: string): CachedMetadata => {
+  const links = getLinks(data);
+  const headings = getHeadings(data);
+  return { headings, links };
 };
 
 export class FakeMetadataCache implements GenericMetadataCache<FakeFile> {
+  linkTargets: { link: string; path: string; resolvesTo: FakeFile }[];
+
+  constructor() {
+    this.linkTargets = [];
+  }
+
   getFileCache(file: FakeFile) {
     return getMetadata(file.contents);
+  }
+
+  getFirstLinkpathDest(link: string, path: string): FakeFile | null {
+    const target = this.linkTargets.find(
+      (x) => x.link === link && x.path === path,
+    );
+    return target?.resolvesTo || null;
+  }
+
+  setLinkTarget(link: string, path: string, resolvesTo: FakeFile) {
+    this.linkTargets.push({ link, path, resolvesTo });
   }
 }
 
@@ -95,3 +153,11 @@ export class FakeApp implements GenericApp<FakeFile> {
     this.metadataCache = new FakeMetadataCache();
   }
 }
+
+export const createPublisher = (app: FakeApp, gateway?: MediumGateway) => {
+  return new Publisher(
+    app,
+    gateway || sinon.createStubInstance(MediumGateway),
+    new FakeGetFrontMatterInfo(),
+  );
+};
