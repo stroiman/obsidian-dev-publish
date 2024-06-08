@@ -79,16 +79,21 @@ type GetValidatedObjectType<T extends GenericObjectValidator> = {
 
 const isNumber = (x: unknown): x is number => typeof x === "number";
 const isString = (x: unknown): x is string => typeof x === "string";
+const isObjectType = (x: unknown): x is Record<string, unknown> =>
+  typeof x === "object" && x !== null;
 
 const isObject = <T extends GenericObjectValidator>(
   input: unknown,
   spec: T,
 ): input is GetValidatedObjectType<T> => {
-  if (typeof input !== "object" || input === null) {
+  if (!isObjectType(input)) {
     return false;
   }
   for (const key of Object.keys(spec)) {
-    const actual = (input as any)[key] as unknown;
+    if (!(key in input)) {
+      return false;
+    }
+    const actual = input[key];
     const validator = spec[key];
     if (!validator(actual)) {
       return false;
