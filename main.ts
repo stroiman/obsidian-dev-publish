@@ -41,7 +41,7 @@ export default class DevPublishPlugin extends Plugin {
             );
             publisher.publish(view.file).then(
               () => {
-                console.log("Stuff published to dev.to");
+                console.log("Article published to dev.to");
               },
               (err) => {
                 console.error("Error publishing to dev.to", err);
@@ -83,7 +83,7 @@ class DevPublishSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("API Key")
+      .setName("API key")
       .setDesc(
         "SECURITY WARNING! This will be stored unencrypted in your obsidian plugin folder. Do not use this plugin if you do not fully understand the security implications of this.",
       )
