@@ -5,6 +5,7 @@ import {
   Plugin,
   PluginSettingTab,
   requestUrl,
+  sanitizeHTMLToDom,
   Setting,
 } from "obsidian";
 import MediumGateway from "src/medium-gateway";
@@ -82,10 +83,10 @@ class DevPublishSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
+
     new Setting(containerEl)
       .setName("API key")
-      .setDesc(
-        "SECURITY WARNING! This will be stored unencrypted in your obsidian plugin folder. Do not use this plugin if you do not fully understand the security implications of this.",
+      .setDesc(sanitizeHTMLToDom("<b>Security warning!</b><br />This will be stored unencrypted in your obsidian plugin folder. Do not use this plugin if you do not fully understand the security implications of this.")
       )
       .addText((text) =>
         text
