@@ -81,10 +81,11 @@ export const getLinks = (data: string) => {
   return links;
 };
 
-export const getMetadata = (data: string): CachedMetadata => {
-  const links = getLinks(data);
-  const headings = getHeadings(data);
-  return { headings, links };
+export const getMetadata = (file: FakeFile): CachedMetadata => {
+  const { frontmatter, contents } = file
+  const links = getLinks(contents);
+  const headings = getHeadings(contents);
+  return { headings, links, frontmatter };
 };
 
 export class FakeMetadataCache implements GenericMetadataCache<FakeFile> {
@@ -95,7 +96,7 @@ export class FakeMetadataCache implements GenericMetadataCache<FakeFile> {
   }
 
   getFileCache(file: FakeFile) {
-    return getMetadata(file.contents);
+    return getMetadata(file);
   }
 
   getFirstLinkpathDest(link: string, path: string): FakeFile | null {

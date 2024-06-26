@@ -2,7 +2,6 @@ import {
   CachedMetadata,
   GenericApp,
   GenericFileManager,
-  GenericMetadataCache,
   GenericVault,
   GetFrontMatterInfo,
 } from "./interfaces";
@@ -33,10 +32,8 @@ export default class Publisher<TFile extends { path: string }> {
     this.getFrontMatterInfo = getFrontMatterInfo;
   }
 
-  async getFrontMatter(file: TFile) {
-    return new Promise<any>((resolve, reject) => {
-      this.fileManager.processFrontMatter(file, resolve).catch(reject);
-    });
+  getFrontMatter(file: TFile) {
+    return this.app.metadataCache.getFileCache(file)?.frontmatter
   }
 
   applyReplaceInstruction(
@@ -66,7 +63,6 @@ export default class Publisher<TFile extends { path: string }> {
 
   async processLinks(
     file: TFile,
-    contents: string,
     cachedMetadata: CachedMetadata | null,
   ): Promise<ReplaceInstruction[]> {
     const links = cachedMetadata?.links;
@@ -79,8 +75,7 @@ export default class Publisher<TFile extends { path: string }> {
           link.link,
           file.path,
         );
-        const frontmatter =
-          targetFile && (await this.getFrontMatter(targetFile));
+        const frontmatter = targetFile && (this.getFrontMatter(targetFile));
         const url = frontmatter?.url;
         const displayText = link.displayText || link.link;
         const replaceString = url ? `[${displayText}](${url})` : displayText;
@@ -91,7 +86,6 @@ export default class Publisher<TFile extends { path: string }> {
             replaceString,
           },
         ];
-        return [];
       }),
     );
     return tmp.flat();
@@ -102,26 +96,24 @@ export default class Publisher<TFile extends { path: string }> {
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const replaceInstructions = await this.processLinks(
       file,
-      originalContents,
       metadataCache,
     );
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
     const h1Instructions = h1
       ? [
-          {
-            from: 0,
-            to: h1.position.end.offset,
-            replaceString: "",
-          },
-        ]
+        {
+          from: 0,
+          to: h1.position.end.offset,
+          replaceString: "",
+        },
+      ]
       : [];
 
-    const dataAfterHeading = await this.applyReplaceInstruction(
+    const dataAfterHeading = this.applyReplaceInstruction(
       [h1Instructions, replaceInstructions].flat(),
       originalContents,
     );
-    const frontmatterInfo =
-      await this.getFrontMatterInfo.getFrontMatterInfo(dataAfterHeading);
+    const frontmatterInfo = this.getFrontMatterInfo.getFrontMatterInfo(dataAfterHeading);
     const markdown = (
       frontmatterInfo.exists
         ? dataAfterHeading.substring(frontmatterInfo.contentStart)
@@ -142,8 +134,8 @@ export default class Publisher<TFile extends { path: string }> {
   }
 
   async publish(file: TFile) {
-    const frontmatter = await this.getFrontMatter(file);
-    const mediumId = frontmatter[ARTICLE_ID_KEY];
+    const frontmatter = this.getFrontMatter(file);
+    const mediumId = frontmatter && frontmatter[ARTICLE_ID_KEY];
     const article = await this.getArticleData(file);
     if (typeof mediumId === "number") {
       await this.gateway.updateArticle({ id: mediumId, article });

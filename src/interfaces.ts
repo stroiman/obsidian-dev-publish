@@ -7,7 +7,7 @@
  *      obsidian properties that we do not need or care about.
  */
 
-import type { FrontMatterInfo } from "obsidian";
+import type { FrontMatterInfo, FrontMatterCache } from "obsidian";
 import * as obsidian from "obsidian";
 
 export interface GenericFileManager<TFile> {
@@ -45,6 +45,7 @@ export type LinkCache = {
 export type CachedMetadata = {
   links?: LinkCache[];
   headings?: HeadingCache[];
+  frontmatter?: FrontMatterCache
 };
 
 export interface GenericMetadataCache<TFile> {
