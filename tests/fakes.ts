@@ -36,7 +36,7 @@ export class FakeVault implements GenericVault<FakeFile> {
   }
 }
 
-const getHeadings = (data: string): HeadingCache[] => {
+export const getHeadings = (data: string): HeadingCache[] => {
   const pattern = /(?:^|\n)(#+) (.*)/g;
   const matches = data.matchAll(pattern);
   const headings: HeadingCache[] = [];
@@ -57,7 +57,7 @@ const getHeadings = (data: string): HeadingCache[] => {
   return headings;
 };
 
-const getLinks = (data: string) => {
+export const getLinks = (data: string) => {
   const links: LinkCache[] = [];
 
   const matches = data.matchAll(

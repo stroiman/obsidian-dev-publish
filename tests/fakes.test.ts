@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getMetadata } from "./fakes";
+import { getHeadings, getLinks, getMetadata } from "./fakes";
 
 describe("getMetadata", () => {
   describe("Getting links", () => {
@@ -7,37 +7,32 @@ describe("getMetadata", () => {
     // link : "Another article"
     // original : "[[Another article]]"
     it("Returns the right for plain links", () => {
-      const metadata = getMetadata("start [[Link]] end");
-      expect(metadata).to.be.like({
-        links: [
-          {
-            displayText: "Link",
-            link: "Link",
-            original: "[[Link]]",
-            position: { start: { offset: 6 }, end: { offset: 14 } },
-          },
-        ],
-      });
+      const links = getLinks("start [[Link]] end");
+      expect(links).to.be.like([
+        {
+          displayText: "Link",
+          link: "Link",
+          original: "[[Link]]",
+          position: { start: { offset: 6 }, end: { offset: 14 } },
+        },
+      ]);
     });
 
     it("Returns the right for links with alias", () => {
-      const metadata = getMetadata("start [[Link|Alias]] end");
-      expect(metadata).to.be.like({
-        links: [
-          {
-            displayText: "Alias",
-            link: "Link",
-            original: "[[Link|Alias]]",
-            position: { start: { offset: 6 }, end: { offset: 20 } },
-          },
-        ],
-      });
+      const links = getLinks("start [[Link|Alias]] end");
+      expect(links).to.be.like([{
+        displayText: "Alias",
+        link: "Link",
+        original: "[[Link|Alias]]",
+        position: { start: { offset: 6 }, end: { offset: 20 } },
+      }]);
     });
   });
+
   describe("Getting headings", () => {
     it("Handle string starts with a heading", () => {
-      const metadata = getMetadata("#  Heading\n\nbody");
-      expect(metadata.headings).to.be.like([
+      const headings = getHeadings("#  Heading\n\nbody");
+      expect(headings).to.be.like([
         {
           heading: "Heading",
           level: 1,
@@ -58,8 +53,8 @@ paragraph
 ### H3
 
 #tag - ignore this`;
-      const response = getMetadata(input);
-      expect(response.headings).to.be.like([
+      const headings = getHeadings(input);
+      expect(headings).to.be.like([
         {
           heading: "H1",
           level: 1,
