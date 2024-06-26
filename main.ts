@@ -31,7 +31,7 @@ export default class DevPublishPlugin extends Plugin {
 
     this.addCommand({
       id: "publish-current-note",
-      name: "Publish current note to dev.to",
+      name: "Create/update article",
       checkCallback: (checking: boolean) => {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (view && view.file) {
@@ -68,7 +68,7 @@ export default class DevPublishPlugin extends Plugin {
     );
   }
 
-  onunload() {}
+  onunload() { }
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
