@@ -1,5 +1,5 @@
 import sinon from "sinon";
-import { FrontMatterInfo, MetadataCache } from "obsidian";
+import { FrontMatterInfo } from "obsidian";
 import {
   CachedMetadata,
   GenericApp,
