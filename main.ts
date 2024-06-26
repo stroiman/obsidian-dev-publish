@@ -45,7 +45,10 @@ export default class DevPublishPlugin extends Plugin {
               () => {
                 console.log("Stuff published to dev.to");
               },
-              (err) => console.error("Error publishing to dev.to"),
+              (err) => {
+                console.error("Error publishing to dev.to", err);
+                new Notice("Publish to DEV: Creating/updating DEV article failed. \nPlease check your access token, and try again.\nIf you wish to file a bug report, please see the project readme page.", 0);
+              }
             );
           }
           return true;
