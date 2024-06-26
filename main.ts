@@ -83,7 +83,7 @@ class DevPublishSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("API KEY")
+      .setName("API Key")
       .setDesc(
         "SECURITY WARNING! This will be stored unencrypted in your obsidian plugin folder. Do not use this plugin if you do not fully understand the security implications of this.",
       )
