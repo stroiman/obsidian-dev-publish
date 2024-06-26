@@ -96,35 +96,17 @@ you happen to know how a way to securely handle secrets from Obsidian plugins.
   draft, allowing you to control everything before publishing.
 - Suggestion from @Rooyca: Autopublish - configurable by the user
 
-## Follow along in the development process
 
-This was developed mostly 100% while live coding on
-[twitch.tv/stroiman](https://twitch.tv/stroiman).
+## Filing a bug report
 
-I will make the videos available on YouTube for posterity, just cutting out
-pauses when I had to take a break, or the door bell was ringing.
+If creating a note doesn't work, first check, and double check that the
+access token is valid.
 
-The first episode was stopped, when I was ready to do a full test of the plugin
-in obsidian, and could not avoid exposing my API key on the stream. What
-happened next was:
+If you wish to file a bug report, please copy the error message from the
+Obsidian console logs. (Accessible through the Developer Tools).
 
-1. I hardcoded my API key in the main.ts file, and publishing a new article
-   worked the first time I tried it.
-1. Updating an article did not work. The `update` method, which had been mocked
-   in tests, was not implemented. The actual code to make the PUT request _was_
-   in place, it was just the glue, binding the production code to the obsidian
-   `requestUrl` method that was missing.
-1. I updated the manifest to give the plugin a unique ID and helpful name and
-   description.
-1. Once that was fixed, updating articles worked as well.
-1. I realised that the frontmatter property used to save the id of a published
-   article was called `medium-article-id`, which I renamed to `dev-article-id`.
-1. I rewrote the command slightly, so it doesn't require you to be in "edit"
-   mode to appear in the command pallete.
-1. I changed the hardcoded title of created articles.
-1. I changed the update function to only update the markdown (so a title change,
-   and/or publish status/tags in DEV does not get overriden by an update).
-1. I added the ability to set the API key in the settings, with a warning.
+It will be helpful if you can share the note that you wish to publish,
+as well as any linked notes.
 
 ## Support this work
 
