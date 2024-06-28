@@ -12,8 +12,6 @@ import MediumGateway from "src/medium-gateway";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
 import Publisher from "src/publisher";
 
-// Remember to rename these classes and interfaces!
-
 interface DevPublishPluginSessings {
   apiKey: string;
 }
