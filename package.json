@@ -33,6 +33,7 @@
     "chai": "^4.4.1",
     "chai-like": "^1.1.1",
     "esbuild": "0.17.3",
+    "eslint": "^8.57.0",
     "fetch-mock": "^9.11.0",
     "mocha": "^10.4.0",
     "node-fetch": "^3.3.2",
