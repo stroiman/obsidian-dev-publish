@@ -4,7 +4,7 @@ import MediumGateway from "src/medium-gateway";
 import { createPublisher, FakeApp } from "./fakes";
 
 describe("Inline mathjax resolution", () => {
-  it.only("Processes inline mathjax to inline mathjax liquid", async () => {
+  it("Processes inline mathjax to inline mathjax liquid", async () => {
     const fakeApp = new FakeApp();
     const file = fakeApp.fileManager.createFakeFile({
       contents: `A paragraph
@@ -59,7 +59,6 @@ describe("Link resolution", () => {
     const fileToPublish = fakeApp.fileManager.createFakeFile({
       frontmatter: { "dev-article-id": 42 },
     });
-    const path = fileToPublish.path;
     fileToPublish.contents = `Line1: [[File1]]\n\n# Heading\n\nLine2: [[File2]]\nLine3: [[File3]]`;
 
     const gateway = sinon.createStubInstance(MediumGateway);
