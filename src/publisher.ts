@@ -24,14 +24,29 @@ export type Json =
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
 
 const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
-  const matches = [...jax.matchAll(/\$([^$]+)\$/g)];
+  // TODO: This should probably be done on a pr. section basis, to avoid
+  // disconnected $'s generate a pair.
+  const matches = [...jax.matchAll(/(\${1,2})([^$]+)\1/g)];
   return matches.map((match): (ReplaceInstruction | undefined) => {
-    const matchJax = match[1]
+    const type = match[1]
+    const matchJax = match[2]
     if (typeof match.index !== "number") { return undefined }
-    return {
-      from: match.index,
-      to: match.index + match[0].length,
-      replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`
+    switch (type) {
+      case "$": {
+        return {
+          from: match.index,
+          to: match.index + match[0].length,
+          replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`
+
+        }
+      }
+      case "$$": {
+        return {
+          from: match.index,
+          to: match.index + match[0].length,
+          replaceString: `{% katex %}\n${matchJax.trim()}\n{% endkatex %}`
+        }
+      }
     }
   }).filter(x => typeof x !== 'undefined')
 }

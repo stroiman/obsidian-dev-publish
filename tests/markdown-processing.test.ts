@@ -3,7 +3,7 @@ import sinon from "sinon";
 import MediumGateway from "src/medium-gateway";
 import { createPublisher, FakeApp } from "./fakes";
 
-describe("Inline mathjax resolution", () => {
+describe("Mathjax resolution", () => {
   it("Processes inline mathjax to inline mathjax liquid", async () => {
     const fakeApp = new FakeApp();
     const file = fakeApp.fileManager.createFakeFile({
@@ -11,7 +11,11 @@ describe("Inline mathjax resolution", () => {
 
 Our $CO_2$ reporting!
 
-A paragraph with inline mathjax $c = \\pm\\sqrt{a^2 + b^2}$ showing.`,
+A paragraph with inline mathjax $c = \\pm\\sqrt{a^2 + b^2}$ showing.
+
+$$
+c = \\pm\\sqrt{a^2 + b^2}
+$$`,
     });
     const publisher = createPublisher(fakeApp);
     const markdown = await publisher.generateMarkdown(file);
@@ -23,7 +27,21 @@ Our {% katex inline %}
 
 A paragraph with inline mathjax {% katex inline %}
  c = \\pm\\sqrt{a^2 + b^2}
-{% endkatex %} showing.`);
+{% endkatex %} showing.
+
+{% katex %}
+c = \\pm\\sqrt{a^2 + b^2}
+{% endkatex %}`);
+  });
+
+  it.skip("Ignores non-matching end $s", async () => {
+    const fakeApp = new FakeApp();
+    const file = fakeApp.fileManager.createFakeFile({
+      contents: `A paragraph $$CO_2$`,
+    });
+    const publisher = createPublisher(fakeApp);
+    const markdown = await publisher.generateMarkdown(file);
+    expect(markdown).to.equal(`A paragraph $$CO_2$`);
   });
 });
 
