@@ -1,3 +1,4 @@
+import { getFrontMatterInfo } from "obsidian";
 import {
   CachedMetadata,
   GenericApp,
@@ -91,7 +92,7 @@ export default class Publisher<TFile extends { path: string }> {
     return tmp.flat();
   }
 
-  async getArticleData(file: TFile) {
+  async generateMarkdown(file: TFile) {
     const originalContents = await this.vault.read(file);
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const replaceInstructions = await this.processLinks(
@@ -119,8 +120,20 @@ export default class Publisher<TFile extends { path: string }> {
         ? dataAfterHeading.substring(frontmatterInfo.contentStart)
         : dataAfterHeading
     ).trim();
+    return markdown
+  }
+
+  generateTitle(file: TFile) {
+    const metadataCache = this.app.metadataCache.getFileCache(file);
+    const h1 = metadataCache?.headings?.find((x) => x.level === 1);
+    return h1?.heading || "Heading Missin";
+  }
+
+  async getArticleData(file: TFile) {
+    const markdown = await this.generateMarkdown(file);
+    const title = this.generateTitle(file);
     return {
-      title: h1?.heading || "Heading Missing",
+      title,
       markdown,
     };
   }
