@@ -14,6 +14,19 @@ const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
 
+const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
+  const matches = [...jax.matchAll(/\$([^\$]+)\$/g)];
+  return matches.map((match): ReplaceInstruction => {
+    const matchJax = match[1]
+    if (typeof match.index !== "number") { return undefined as any }
+    return {
+      from: match.index,
+      to: match.index + match[0].length,
+      replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`
+    }
+  }).filter(x => x as any)
+}
+
 export default class Publisher<TFile extends { path: string }> {
   app: GenericApp<TFile>;
   fileManager: GenericFileManager<TFile>;
@@ -109,9 +122,10 @@ export default class Publisher<TFile extends { path: string }> {
         },
       ]
       : [];
+    const jaxInstructions = processInlineMathJax(originalContents)
 
     const dataAfterHeading = this.applyReplaceInstruction(
-      [h1Instructions, replaceInstructions].flat(),
+      [h1Instructions, replaceInstructions, jaxInstructions].flat(),
       originalContents,
     );
     const frontmatterInfo = this.getFrontMatterInfo.getFrontMatterInfo(dataAfterHeading);
