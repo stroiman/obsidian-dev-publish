@@ -1,5 +1,5 @@
-import { requestUrl, RequestUrlParam } from "obsidian";
-type RequestUrl = typeof requestUrl;
+import { RequestUrlParam } from "obsidian";
+import { Json } from "./publisher";
 
 type Article = {
   title: string;
@@ -40,7 +40,7 @@ const putArticle = async (
 ) => {
   const { articleId, article, apiKey } = input;
   const body = bodyFromArticle(article);
-  const response = await requestUrl({
+  await requestUrl({
     url: `https://dev.to/api/articles/${articleId}`,
     method: "PUT",
     body: JSON.stringify(body),
@@ -49,7 +49,6 @@ const putArticle = async (
     },
     contentType: "application/json",
   });
-  const response_body = await response.json;
 };
 
 export type CreateArticleResult = {
@@ -59,20 +58,16 @@ export type CreateArticleResult = {
 };
 
 export type HttpResponse = {
-  json: Promise<any>;
+  json: Promise<Json>;
 };
 
 export type MakeHttpRequest = (input: RequestUrlParam) => Promise<HttpResponse>;
 
-let assertIsObject = (input: unknown): input is {} => {
-  return typeof input === "object" && input !== null;
-};
-
 type Validator<T> = (input: unknown) => input is T;
-type GetValidatedType<T extends Validator<any>> =
+type GetValidatedType<T extends Validator<unknown>> =
   T extends Validator<infer U> ? U : never;
 
-type GenericObjectValidator = { [key: string]: Validator<any> };
+type GenericObjectValidator = { [key: string]: Validator<unknown> };
 type GetValidatedObjectType<T extends GenericObjectValidator> = {
   [key in keyof T]: GetValidatedType<T[key]>;
 };

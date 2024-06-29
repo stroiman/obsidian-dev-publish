@@ -1,14 +1,11 @@
 import sinon, { match } from "sinon";
-import { GenericFileManager } from "src/interfaces";
 import MediumGateway, { CreateArticleResult } from "src/medium-gateway";
 import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
 import {
   FakeApp,
   FakeFile,
-  FakeFileManager,
   FakeGetFrontMatterInfo,
-  FakeVault,
 } from "./fakes";
 
 const createPostArticleResponse = (input?: Partial<CreateArticleResult>) => ({

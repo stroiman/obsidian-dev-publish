@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getHeadings, getLinks, getMetadata } from "./fakes";
+import { getHeadings, getLinks } from "./fakes";
 
 describe("getMetadata", () => {
   describe("Getting links", () => {

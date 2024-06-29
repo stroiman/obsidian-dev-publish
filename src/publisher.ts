@@ -1,4 +1,3 @@
-import { getFrontMatterInfo } from "obsidian";
 import {
   CachedMetadata,
   GenericApp,
@@ -12,19 +11,29 @@ const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 
+export type JsonObject = { [key: string]: Json }
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | Json[]
+  | JsonObject
+  ;
+
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
 
 const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
-  const matches = [...jax.matchAll(/\$([^\$]+)\$/g)];
-  return matches.map((match): ReplaceInstruction => {
+  const matches = [...jax.matchAll(/\$([^$]+)\$/g)];
+  return matches.map((match): (ReplaceInstruction | undefined) => {
     const matchJax = match[1]
-    if (typeof match.index !== "number") { return undefined as any }
+    if (typeof match.index !== "number") { return undefined }
     return {
       from: match.index,
       to: match.index + match[0].length,
       replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`
     }
-  }).filter(x => x as any)
+  }).filter(x => typeof x !== 'undefined')
 }
 
 export default class Publisher<TFile extends { path: string }> {
@@ -152,7 +161,7 @@ export default class Publisher<TFile extends { path: string }> {
     };
   }
 
-  async updateFrontmatter(file: TFile, newData: any) {
+  async updateFrontmatter(file: TFile, newData: JsonObject) {
     await this.fileManager.processFrontMatter(file, (existing) => {
       for (const key of Object.keys(newData)) {
         existing[key] = newData[key];

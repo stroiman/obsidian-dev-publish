@@ -1,14 +1,10 @@
-import sinon, { match } from "sinon";
-import { GenericFileManager } from "src/interfaces";
 import MediumGateway from "src/medium-gateway";
 import Publisher from "src/publisher";
-import { createFakeFile } from "./factories";
 import {
   FakeApp,
   FakeFile,
   FakeFileManager,
   FakeGetFrontMatterInfo,
-  FakeVault,
 } from "./fakes";
 import fetchMock from "fetch-mock";
 import { fetchRequestUrlWrapper } from "./obsidian-wrappers";

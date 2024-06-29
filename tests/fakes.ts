@@ -10,18 +10,18 @@ import {
   LinkCache,
 } from "src/interfaces";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
-import Publisher from "src/publisher";
+import Publisher, { JsonObject } from "src/publisher";
 import MediumGateway from "src/medium-gateway";
 import { createFakeFile } from "./factories";
 
 export type FakeFile = {
   path: string;
-  frontmatter: any;
+  frontmatter?: JsonObject;
   contents: string;
 };
 
 export class FakeFileManager implements GenericFileManager<FakeFile> {
-  processFrontMatter(file: FakeFile, fn: (frontmatter: any) => void) {
+  processFrontMatter(file: FakeFile, fn: (frontmatter?: JsonObject) => void) {
     fn(file.frontmatter);
     return Promise.resolve();
   }
@@ -61,7 +61,7 @@ export const getLinks = (data: string) => {
   const links: LinkCache[] = [];
 
   const matches = data.matchAll(
-    /\[\[(?<link>[^\]\|]+)(?:\|(?<alias>[^\]]*))?\]\]/g,
+    /\[\[(?<link>[^\]|]+)(?:\|(?<alias>[^\]]*))?\]\]/g,
   );
   for (const match of matches) {
     const index = match.index!;

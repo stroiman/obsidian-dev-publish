@@ -1,7 +1,5 @@
 import type {
   requestUrl,
-  RequestUrlResponse,
-  RequestUrlResponsePromise,
 } from "obsidian";
 import { HttpResponse } from "src/medium-gateway";
 
@@ -60,7 +58,6 @@ export const fetchRequestUrlWrapper = async (
   if (!fetchResponse.ok && throwOnError) {
     throw new Error("Error from server");
   }
-  type RequestUrlReturnType = Awaited<ReturnType<RequestUrl>>;
   const json = fetchResponse.json();
   return { json };
 };

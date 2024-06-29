@@ -9,11 +9,12 @@
 
 import type { FrontMatterInfo, FrontMatterCache } from "obsidian";
 import * as obsidian from "obsidian";
+import { JsonObject } from "./publisher";
 
 export interface GenericFileManager<TFile> {
   processFrontMatter(
     file: TFile,
-    fn: (frontmatter: any) => void,
+    fn: (frontmatter: JsonObject) => void,
   ): Promise<void>;
 }
 

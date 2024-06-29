@@ -1,11 +1,6 @@
-import sinon from "sinon";
-import { expect } from "chai";
-import { foo } from "../src/implementation";
-import type { requestUrl } from "obsidian";
+/* eslint-disable no-console */
 import { fetchRequestUrlWrapper } from "./obsidian-wrappers";
-import { postArticle } from "src/medium-gateway";
 
-type RequestUrl = typeof requestUrl;
 
 describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
   before(async () => {
@@ -39,6 +34,7 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
       contentType: "application/json",
     });
     const response_body = await response.json;
+    // eslint-disable-next-line
     console.log(response_body);
   });
 
@@ -50,7 +46,7 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
       },
     });
     const json = await response.json;
-    console.log(response);
+    console.log(json);
   });
 
   // it.skip("Dev feedback tool only - Should create an article on dev.to", async () => {
@@ -69,6 +65,7 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
  *
  * Example obsidian response:
  */
+// eslint-disable-next-line
 const response = {
   type_of: "article",
   id: 1875178,
