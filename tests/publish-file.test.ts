@@ -7,6 +7,7 @@ import {
   FakeFile,
   FakeGetFrontMatterInfo,
 } from "./fakes";
+import { expect } from "chai";
 
 const createPostArticleResponse = (input?: Partial<CreateArticleResult>) => ({
   id: 1,
@@ -57,7 +58,7 @@ describe("Publish a file from a TFile structure", () => {
 
     it("Should update the frontmatter", async () => {
       await publisher.publish(obsidianFile);
-      obsidianFile.frontmatter["dev-article-id"].should.equal(43);
+      expect(obsidianFile.frontmatter["dev-article-id"]).to.equal(43);
     });
 
     describe("Contents does not contains frontmatter", () => {

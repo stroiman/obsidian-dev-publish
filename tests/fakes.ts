@@ -16,12 +16,12 @@ import { createFakeFile } from "./factories";
 
 export type FakeFile = {
   path: string;
-  frontmatter?: JsonObject;
+  frontmatter: JsonObject;
   contents: string;
 };
 
 export class FakeFileManager implements GenericFileManager<FakeFile> {
-  processFrontMatter(file: FakeFile, fn: (frontmatter?: JsonObject) => void) {
+  processFrontMatter(file: FakeFile, fn: (frontmatter: JsonObject) => void) {
     fn(file.frontmatter);
     return Promise.resolve();
   }
