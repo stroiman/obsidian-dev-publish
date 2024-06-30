@@ -5,7 +5,7 @@ import {
   GenericVault,
   GetFrontMatterInfo,
 } from "./interfaces";
-import MediumGateway from "./medium-gateway";
+import MediumGateway, { Article } from "./medium-gateway";
 
 const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
@@ -158,25 +158,33 @@ export default class Publisher<TFile extends { path: string }> {
   generateTitle(file: TFile) {
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
-    return h1?.heading || "Heading Missin";
+    return h1?.heading || "Heading Missing";
   }
 
-  async getArticleData(file: TFile) {
+  async getArticleData(file: TFile): Promise<Article> {
     const parseTags = (tags: Json | undefined) => {
       if (!Array.isArray(tags)) {
         return undefined;
       }
       return tags.filter((x) => typeof x === "string").slice(0, 4);
     };
+    const parseString = (value: Json | undefined) => {
+      if (typeof value === "string") {
+        return value;
+      }
+      return undefined;
+    };
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const markdown = await this.generateMarkdown(file);
     const title = this.generateTitle(file);
     const tags = parseTags(metadataCache?.frontmatter?.["dev-tags"]);
+    const series = parseString(metadataCache?.frontmatter?.["dev-series"]);
 
     return {
       title,
       markdown,
       tags,
+      series,
     };
   }
 

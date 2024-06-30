@@ -1,20 +1,19 @@
 import { RequestUrlParam } from "obsidian";
 import { Json } from "./publisher";
 
-type Article = {
+export type Article = {
   title: string;
   markdown: string;
   tags?: string[];
+  series?: string;
   // eventually tags - from frontmatter
 };
 
-const bodyFromArticle = (article: Article) => ({
+const bodyFromArticle = ({ markdown, ...rest }: Article) => ({
   article: {
-    title: article.title,
     published: false,
-    body_markdown: article.markdown,
-    tags: article.tags,
-    // series: "Hello series", // TODO, what about series?
+    body_markdown: markdown,
+    ...rest,
   },
 });
 
@@ -23,6 +22,7 @@ export const postArticle = async (
   requestUrl: MakeHttpRequest,
 ) => {
   const body = bodyFromArticle(input.article);
+  console.log("Create dev article", { body });
   const response = await requestUrl({
     url: "https://dev.to/api/articles",
     method: "POST",
@@ -41,6 +41,7 @@ const putArticle = async (
 ) => {
   const { articleId, article, apiKey } = input;
   const body = bodyFromArticle(article);
+  console.log("Update dev article", { articleId, body });
   await requestUrl({
     url: `https://dev.to/api/articles/${articleId}`,
     method: "PUT",

@@ -7,7 +7,7 @@
  *      obsidian properties that we do not need or care about.
  */
 
-import type { FrontMatterInfo, FrontMatterCache } from "obsidian";
+import type { FrontMatterInfo } from "obsidian";
 import * as obsidian from "obsidian";
 import { JsonObject } from "./publisher";
 

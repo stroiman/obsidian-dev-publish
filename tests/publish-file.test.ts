@@ -57,6 +57,37 @@ describe("Publish a file from a TFile structure", () => {
       expect(obsidianFile.frontmatter["dev-article-id"]).to.equal(43);
     });
 
+    describe("Series", () => {
+      it("Should not be included in the posted data if the `dev-series` metadata doesn't exist", async () => {
+        // This is already the default state, but I want the test to make this explicit
+        delete obsidianFile.frontmatter["dev-series"];
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledWith(
+          match({ article: { series: match.typeOf("undefined") } }),
+        );
+      });
+
+      it("Should be set in the data if the `dev-series` metadata has a string value", async () => {
+        // This is already the default state, but I want the test to make this explicit
+        obsidianFile.frontmatter["dev-series"] = "My awesome series";
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledWith(
+          match({
+            article: { series: "My awesome series" },
+          }),
+        );
+      });
+
+      it("Should be ignored data if the `dev-series` metadata is not a string", async () => {
+        // This is already the default state, but I want the test to make this explicit
+        obsidianFile.frontmatter["dev-series"] = 42;
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledWith(
+          match({ article: { series: match.typeOf("undefined") } }),
+        );
+      });
+    });
+
     describe("Publishing tags", () => {
       it("Should not create `tags` if none exists in frontmatter", async () => {
         // This is already the default state, but I want the test to make this explicit
