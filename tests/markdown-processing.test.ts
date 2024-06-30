@@ -4,6 +4,22 @@ import MediumGateway from "src/medium-gateway";
 import { createPublisher, FakeApp } from "./fakes";
 
 describe("Mathjax resolution", () => {
+  it("Should ignore `$` when they are not on the same line", async () => {
+    // Stupidly replacing every text between two $ characters would mess up a
+    // lot of valid cases for having $ in the text.
+    const fakeApp = new FakeApp();
+    const file = fakeApp.fileManager.createFakeFile({
+      contents: `Income: 120$
+
+Expenses: 80$
+
+Profit: 40$`,
+    });
+    const publisher = createPublisher(fakeApp);
+    const markdown = await publisher.generateMarkdown(file);
+    expect(markdown).to.equal(file.contents);
+  });
+
   it("Processes inline mathjax to inline mathjax liquid", async () => {
     const fakeApp = new FakeApp();
     const file = fakeApp.fileManager.createFakeFile({

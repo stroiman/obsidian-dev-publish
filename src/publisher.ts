@@ -17,32 +17,35 @@ export type Json = string | number | boolean | null | Json[] | JsonObject;
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
 
 const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
-  // TODO: This should probably be done on a pr. section basis, to avoid
-  // disconnected $'s generate a pair.
-  const matches = [...jax.matchAll(/(\${1,2})([^$]+)\1/g)];
+  const matches = [...jax.matchAll(/(\${1})([^\n$]+)\1/g)];
   return matches
     .map((match): ReplaceInstruction | undefined => {
-      const type = match[1];
       const matchJax = match[2];
       if (typeof match.index !== "number") {
         return undefined;
       }
-      switch (type) {
-        case "$": {
-          return {
-            from: match.index,
-            to: match.index + match[0].length,
-            replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`,
-          };
-        }
-        case "$$": {
-          return {
-            from: match.index,
-            to: match.index + match[0].length,
-            replaceString: `{% katex %}\n${matchJax.trim()}\n{% endkatex %}`,
-          };
-        }
+      return {
+        from: match.index,
+        to: match.index + match[0].length,
+        replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`,
+      };
+    })
+    .filter((x) => typeof x !== "undefined");
+};
+
+const processBlockMathJax = (jax: string): ReplaceInstruction[] => {
+  const matches = [...jax.matchAll(/(\${2})([^$]+)\1/g)];
+  return matches
+    .map((match): ReplaceInstruction | undefined => {
+      const matchJax = match[2];
+      if (typeof match.index !== "number") {
+        return undefined;
       }
+      return {
+        from: match.index,
+        to: match.index + match[0].length,
+        replaceString: `{% katex %}\n${matchJax.trim()}\n{% endkatex %}`,
+      };
     })
     .filter((x) => typeof x !== "undefined");
 };
@@ -139,10 +142,16 @@ export default class Publisher<TFile extends { path: string }> {
           },
         ]
       : [];
-    const jaxInstructions = processInlineMathJax(originalContents);
+    const inlineJaxInstructions = processInlineMathJax(originalContents);
+    const blockJaxInstructions = processBlockMathJax(originalContents);
 
     const dataAfterHeading = this.applyReplaceInstruction(
-      [h1Instructions, replaceInstructions, jaxInstructions].flat(),
+      [
+        h1Instructions,
+        replaceInstructions,
+        inlineJaxInstructions,
+        blockJaxInstructions,
+      ].flat(),
       originalContents,
     );
     const frontmatterInfo =
