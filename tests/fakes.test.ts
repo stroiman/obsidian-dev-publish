@@ -1,6 +1,19 @@
 import { expect } from "chai";
 import { getHeadings, getLinks } from "./fakes";
 
+/**
+ * This code tests test code, but because the way Obsidian is build, all the
+ * good stuff I want to have access to when running tests are not available,
+ * such as detecting where headers/sections/links are located.
+ *
+ * This leaves me with three choices
+ *  1. Don't test (not a choice really)
+ *  2. Write tests coupled to the API of Obsidian. A really bad idea
+ *  3. Write tests expressing desired behaviour, duplicating parts of the 
+ *     markdown processing in Obsidian itself
+ *
+ * There is really only one choice, duplicate functionality in Obsidian.
+ */
 describe("getMetadata", () => {
   describe("Getting links", () => {
     // displayText : "Another article"
