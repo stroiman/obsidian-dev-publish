@@ -42,7 +42,7 @@ text without the hash.
 
 ### Example
 
-Given, `My portfolio.md` exists in the vaule with the following contents
+Given, `My portfolio.md` exists in the vault with the following contents
 
 ```markdown
 ---
@@ -54,7 +54,8 @@ url: https://example.com/my-portfolio
 ...
 ```
 
-And, `My bio.md` doesn't exist, or doesn't have a `url` metadata field,
+And, `My bio.md` doesn't exist in the vault, or it exists but doesn't have a
+`url` metadata field,
 
 When I publish the file:
 
