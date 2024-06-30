@@ -52,6 +52,14 @@ NOTE: At the time of writing this, I have not created a series on DEV, but I can
 see that the value is set when editing the series for my unpublished test
 articles.
 
+### MathJax support
+
+Inline MathJax, i.e. contained in single-`$`, like "This is our $CO_2$ report",
+will be converted to `{% katex inline %}` supported by DEV.
+
+MathJax blocks, i.e. wrapped in double-`$`s, will be converted to `{% katex %}`
+blocks.
+
 ### Example
 
 Given, `My portfolio.md` exists in the vault with the following contents
