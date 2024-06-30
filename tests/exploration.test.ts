@@ -1,6 +1,48 @@
 /* eslint-disable no-console */
 import { fetchRequestUrlWrapper } from "./obsidian-wrappers";
 
+/*
+ * Abandoned attempt at uploading images
+ *
+ * The DEV API does not expose an endpoint for uploading images. Internally,
+ * when using the UI, it uploads to /image_uploads, so I tried to see if
+ * posting to this endpoint with an API KEY in the header would work.
+ *
+ * But that doesn't appear to be the case. Instead of responsing with a JSON
+ * value containing the URL of an uploaded image, the server responds with
+ * STATUS: 200
+ * Content-type: text/html
+ * Body:
+ * i.e. no text in the body - unleass I completely misunderstand how to
+ * interpret the response, but neither .text() or .arrayBuffer() generated
+ * content.
+ *
+ * Thus, if we are to upload images, we must upload to another server.
+ */
+//specify.only("Upload image", async () => {
+//  if (!process.env.DEV_API_KEY) {
+//    throw new Error("Missing api key");
+//  }
+//  const fileName =
+//    "/Users/peter/src/obsidian-plugins/Plugin Development/temp.png";
+//  const formData = new FormData();
+//  formData.append("image[]", fs.createReadStream(fileName));
+//  const r = await fetch("https://dev.to/image_uploads", {
+//    method: "POST",
+//    headers: {
+//      accept: "application/json",
+//      "api-key": process.env.DEV_API_KEY as string,
+//    },
+//    body: formData,
+//  });
+//  console.log("Status: ", r.status);
+//  r.headers.forEach((val, key) => {
+//    console.log("Header", key, val);
+//  });
+//  //const ab = await r.arrayBuffer()
+//  //const b = Buffer.from(ab)
+//  console.log("Body: ", await r.text());
+//});
 
 describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
   before(async () => {
