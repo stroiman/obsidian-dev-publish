@@ -2,11 +2,7 @@ import sinon, { match } from "sinon";
 import MediumGateway, { CreateArticleResult } from "src/medium-gateway";
 import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
-import {
-  FakeApp,
-  FakeFile,
-  FakeGetFrontMatterInfo,
-} from "./fakes";
+import { FakeApp, FakeFile, FakeGetFrontMatterInfo } from "./fakes";
 import { expect } from "chai";
 
 const createPostArticleResponse = (input?: Partial<CreateArticleResult>) => ({
@@ -59,6 +55,25 @@ describe("Publish a file from a TFile structure", () => {
     it("Should update the frontmatter", async () => {
       await publisher.publish(obsidianFile);
       expect(obsidianFile.frontmatter["dev-article-id"]).to.equal(43);
+    });
+
+    it("Should not create `tags` if none exists in frontmatter", async () => {
+      // This is already the default state, but I want the test to make this explicit
+      delete obsidianFile.frontmatter["dev-tags"];
+      await publisher.publish(obsidianFile);
+      const article = gateway.createArticle.firstCall.args[0];
+      article.should.not.haveOwnProperty("tags");
+    });
+
+    it("Should create `tags` if they exists in frontmatter", async () => {
+      // This is already the default state, but I want the test to make this explicit
+      obsidianFile.frontmatter["dev-tags"] = ["tag1", "tag2"];
+      await publisher.publish(obsidianFile);
+      gateway.createArticle.should.have.been.calledOnceWith(
+        match({
+          article: { tags: ["tag1", "tag2"] },
+        }),
+      );
     });
 
     describe("Contents does not contains frontmatter", () => {

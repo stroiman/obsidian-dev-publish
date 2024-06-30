@@ -46,7 +46,7 @@ export type LinkCache = {
 export type CachedMetadata = {
   links?: LinkCache[];
   headings?: HeadingCache[];
-  frontmatter?: FrontMatterCache
+  frontmatter?: JsonObject;
 };
 
 export interface GenericMetadataCache<TFile> {

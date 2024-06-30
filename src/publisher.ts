@@ -11,15 +11,8 @@ const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 
-export type JsonObject = { [key: string]: Json }
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | Json[]
-  | JsonObject
-  ;
+export type JsonObject = { [key: string]: Json };
+export type Json = string | number | boolean | null | Json[] | JsonObject;
 
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
 
@@ -27,29 +20,32 @@ const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
   // TODO: This should probably be done on a pr. section basis, to avoid
   // disconnected $'s generate a pair.
   const matches = [...jax.matchAll(/(\${1,2})([^$]+)\1/g)];
-  return matches.map((match): (ReplaceInstruction | undefined) => {
-    const type = match[1]
-    const matchJax = match[2]
-    if (typeof match.index !== "number") { return undefined }
-    switch (type) {
-      case "$": {
-        return {
-          from: match.index,
-          to: match.index + match[0].length,
-          replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`
-
+  return matches
+    .map((match): ReplaceInstruction | undefined => {
+      const type = match[1];
+      const matchJax = match[2];
+      if (typeof match.index !== "number") {
+        return undefined;
+      }
+      switch (type) {
+        case "$": {
+          return {
+            from: match.index,
+            to: match.index + match[0].length,
+            replaceString: `{% katex inline %}\n ${matchJax}\n{% endkatex %}`,
+          };
+        }
+        case "$$": {
+          return {
+            from: match.index,
+            to: match.index + match[0].length,
+            replaceString: `{% katex %}\n${matchJax.trim()}\n{% endkatex %}`,
+          };
         }
       }
-      case "$$": {
-        return {
-          from: match.index,
-          to: match.index + match[0].length,
-          replaceString: `{% katex %}\n${matchJax.trim()}\n{% endkatex %}`
-        }
-      }
-    }
-  }).filter(x => typeof x !== 'undefined')
-}
+    })
+    .filter((x) => typeof x !== "undefined");
+};
 
 export default class Publisher<TFile extends { path: string }> {
   app: GenericApp<TFile>;
@@ -71,7 +67,7 @@ export default class Publisher<TFile extends { path: string }> {
   }
 
   getFrontMatter(file: TFile) {
-    return this.app.metadataCache.getFileCache(file)?.frontmatter
+    return this.app.metadataCache.getFileCache(file)?.frontmatter;
   }
 
   applyReplaceInstruction(
@@ -113,7 +109,7 @@ export default class Publisher<TFile extends { path: string }> {
           link.link,
           file.path,
         );
-        const frontmatter = targetFile && (this.getFrontMatter(targetFile));
+        const frontmatter = targetFile && this.getFrontMatter(targetFile);
         const url = frontmatter?.url;
         const displayText = link.displayText || link.link;
         const replaceString = url ? `[${displayText}](${url})` : displayText;
@@ -132,33 +128,31 @@ export default class Publisher<TFile extends { path: string }> {
   async generateMarkdown(file: TFile) {
     const originalContents = await this.vault.read(file);
     const metadataCache = this.app.metadataCache.getFileCache(file);
-    const replaceInstructions = await this.processLinks(
-      file,
-      metadataCache,
-    );
+    const replaceInstructions = await this.processLinks(file, metadataCache);
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
     const h1Instructions = h1
       ? [
-        {
-          from: 0,
-          to: h1.position.end.offset,
-          replaceString: "",
-        },
-      ]
+          {
+            from: 0,
+            to: h1.position.end.offset,
+            replaceString: "",
+          },
+        ]
       : [];
-    const jaxInstructions = processInlineMathJax(originalContents)
+    const jaxInstructions = processInlineMathJax(originalContents);
 
     const dataAfterHeading = this.applyReplaceInstruction(
       [h1Instructions, replaceInstructions, jaxInstructions].flat(),
       originalContents,
     );
-    const frontmatterInfo = this.getFrontMatterInfo.getFrontMatterInfo(dataAfterHeading);
+    const frontmatterInfo =
+      this.getFrontMatterInfo.getFrontMatterInfo(dataAfterHeading);
     const markdown = (
       frontmatterInfo.exists
         ? dataAfterHeading.substring(frontmatterInfo.contentStart)
         : dataAfterHeading
     ).trim();
-    return markdown
+    return markdown;
   }
 
   generateTitle(file: TFile) {
@@ -168,11 +162,14 @@ export default class Publisher<TFile extends { path: string }> {
   }
 
   async getArticleData(file: TFile) {
+    const metadataCache = this.app.metadataCache.getFileCache(file);
     const markdown = await this.generateMarkdown(file);
     const title = this.generateTitle(file);
+    const tags = metadataCache?.frontmatter?.["dev-tags"];
     return {
       title,
       markdown,
+      tags,
     };
   }
 
