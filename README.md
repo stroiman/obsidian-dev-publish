@@ -23,6 +23,70 @@ Obsidian plugin that allows you to publish notes as articles on DEV (https://dev
 - Resolve the `url` metadata of linked attributes.
 - After creating a note, add a link in the frontmatter
 
+## Usage
+
+### Tags
+
+Tags on DEV are taken from the `dev-tags` value in the frontmatter. If the value
+is not an array, it will be ignored. Elements that are not strings will be
+removed. DEV supports at most 4 tags. If you specify more than 4 tags, only the
+first 4 will be used.
+
+DEV shows tags prefixed with a hash (`#`). Don't add this yourself. The actual tag is the
+text without the hash.
+
+> [!NOTE]
+> Obsidian tags are not used, as they can be used for different purposes. E.g. I
+> use tags to indicate the purposes of notes, e.g. `project/article`, and I use
+> links for grouping by topics. But on DEV, tags would correspond to topics.
+
+### Example
+
+Given, `My portfolio.md` exists in the vaule with the following contents
+
+```markdown
+---
+url: https://example.com/my-portfolio
+---
+
+# My Portfolio
+
+...
+```
+
+And, `My bio.md` doesn't exist, or doesn't have a `url` metadata field,
+
+When I publish the file:
+
+```markdown
+---
+dev-tags:
+  - javascript
+  - tdd
+---
+
+related:
+ - [[TDD MOC]]
+ - [[Javascript MOC]]
+
+# How I write TDD in JS
+
+I am good at it.
+
+See my portfolio at [[My portfolio]], and my [[My bio]]
+```
+
+Then the following article is created on DEV.
+
+```json
+{
+  "tags": ["javascript", "tdd"],
+  "title: "How I write TDD in JS",
+  "markdown": "I am good at it\n\nSee my portfolio at [My
+  portfolio](https://example.com/my-portfolio), and My bio"
+}
+```
+
 ### A note about the special meaning of H1
 
 Obsidian uses markdown as its file format, and markdown has a special affinity
