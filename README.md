@@ -52,13 +52,17 @@ NOTE: At the time of writing this, I have not created a series on DEV, but I can
 see that the value is set when editing the series for my unpublished test
 articles.
 
-### MathJax support
+### Mathjax support
 
-Inline MathJax, i.e. contained in single-`$`, like "This is our $CO_2$ report",
+Inline Mathjax, i.e. contained in single-`$`, like "This is our $CO_2$ report",
 will be converted to `{% katex inline %}` supported by DEV.
 
-MathJax blocks, i.e. wrapped in double-`$`s, will be converted to `{% katex %}`
+Mathjax blocks, i.e. wrapped in double-`$`s, will be converted to `{% katex %}`
 blocks.
+
+As this is probably a niche case, and could mess up texts that use
+`$`-characters, e.g. a finance report, you have to explicitly enable this by
+setting `dev-enable-mathjax` in the frontmatter.
 
 ### Example
 

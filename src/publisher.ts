@@ -131,6 +131,7 @@ export default class Publisher<TFile extends { path: string }> {
   async generateMarkdown(file: TFile) {
     const originalContents = await this.vault.read(file);
     const metadataCache = this.app.metadataCache.getFileCache(file);
+    const frontmatter = metadataCache?.frontmatter || {};
     const replaceInstructions = await this.processLinks(file, metadataCache);
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
     const h1Instructions = h1
@@ -142,16 +143,22 @@ export default class Publisher<TFile extends { path: string }> {
           },
         ]
       : [];
-    const inlineJaxInstructions = processInlineMathJax(originalContents);
-    const blockJaxInstructions = processBlockMathJax(originalContents);
+
+    if (frontmatter["dev-enable-mathjax"]) {
+      replaceInstructions.splice(
+        replaceInstructions.length,
+        0,
+        ...processInlineMathJax(originalContents),
+      );
+      replaceInstructions.splice(
+        replaceInstructions.length,
+        0,
+        ...processBlockMathJax(originalContents),
+      );
+    }
 
     const dataAfterHeading = this.applyReplaceInstruction(
-      [
-        h1Instructions,
-        replaceInstructions,
-        inlineJaxInstructions,
-        blockJaxInstructions,
-      ].flat(),
+      [h1Instructions, replaceInstructions].flat(),
       originalContents,
     );
     const frontmatterInfo =

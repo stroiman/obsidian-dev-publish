@@ -1,29 +1,55 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import MediumGateway from "src/medium-gateway";
-import { createPublisher, FakeApp } from "./fakes";
+import { createPublisher, FakeApp, FakeFile } from "./fakes";
+import Publisher from "src/publisher";
 
 describe("Mathjax resolution", () => {
-  it("Should ignore `$` when they are not on the same line", async () => {
-    // Stupidly replacing every text between two $ characters would mess up a
-    // lot of valid cases for having $ in the text.
-    const fakeApp = new FakeApp();
-    const file = fakeApp.fileManager.createFakeFile({
-      contents: `Income: 120$
+  let fakeApp: FakeApp;
+  let file: FakeFile;
+  let publisher: Publisher<FakeFile>;
+
+  beforeEach(() => {
+    fakeApp = new FakeApp();
+    file = fakeApp.fileManager.createFakeFile({});
+    publisher = createPublisher(fakeApp);
+  });
+
+  describe("The file does not have the `dev-enable-mathjax` property", () => {
+    beforeEach(() => {
+      delete file.frontmatter["dev-enable-mathjax"];
+    });
+
+    it("Should ignore `$`s, even when valid mathjax is contained", async () => {
+      // Stupidly replacing every text between two $ characters would mess up a
+      // lot of valid cases for having $ in the text.
+      file.contents =
+        "A paragraph with inline mathjax $c = \\pm\\sqrt{a^2 + b^2}$.";
+      const markdown = await publisher.generateMarkdown(file);
+      expect(markdown).to.equal(file.contents);
+    });
+  });
+
+  describe("The file has the `dev-enable-mathjax` metadata", () => {
+    beforeEach(() => {
+      file.frontmatter["dev-enable-mathjax"] = true;
+    });
+
+    it("Should ignore `$` when they are not on the same line", async () => {
+      // Stupidly replacing every text between two $ characters would mess up a
+      // lot of valid cases for having $ in the text.
+      const contents = `Income: 120$
 
 Expenses: 80$
 
-Profit: 40$`,
+Profit: 40$`;
+      file.contents = contents;
+      const markdown = await publisher.generateMarkdown(file);
+      expect(markdown).to.equal(file.contents);
     });
-    const publisher = createPublisher(fakeApp);
-    const markdown = await publisher.generateMarkdown(file);
-    expect(markdown).to.equal(file.contents);
-  });
 
-  it("Processes inline mathjax to inline mathjax liquid", async () => {
-    const fakeApp = new FakeApp();
-    const file = fakeApp.fileManager.createFakeFile({
-      contents: `A paragraph
+    it("Processes inline mathjax to inline mathjax liquid", async () => {
+      const contents = `A paragraph
 
 Our $CO_2$ reporting!
 
@@ -31,11 +57,10 @@ A paragraph with inline mathjax $c = \\pm\\sqrt{a^2 + b^2}$ showing.
 
 $$
 c = \\pm\\sqrt{a^2 + b^2}
-$$`,
-    });
-    const publisher = createPublisher(fakeApp);
-    const markdown = await publisher.generateMarkdown(file);
-    expect(markdown).to.equal(`A paragraph
+$$`;
+      file.contents = contents;
+      const markdown = await publisher.generateMarkdown(file);
+      expect(markdown).to.equal(`A paragraph
 
 Our {% katex inline %}
  CO_2
@@ -48,16 +73,13 @@ A paragraph with inline mathjax {% katex inline %}
 {% katex %}
 c = \\pm\\sqrt{a^2 + b^2}
 {% endkatex %}`);
-  });
-
-  it.skip("Ignores non-matching end $s", async () => {
-    const fakeApp = new FakeApp();
-    const file = fakeApp.fileManager.createFakeFile({
-      contents: `A paragraph $$CO_2$`,
     });
-    const publisher = createPublisher(fakeApp);
-    const markdown = await publisher.generateMarkdown(file);
-    expect(markdown).to.equal(`A paragraph $$CO_2$`);
+
+    it.skip("Ignores non-matching end $s", async () => {
+      file.contents = `A paragraph $$CO_2$`;
+      const markdown = await publisher.generateMarkdown(file);
+      expect(markdown).to.equal(`A paragraph $$CO_2$`);
+    });
   });
 });
 
