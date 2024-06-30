@@ -40,6 +40,18 @@ text without the hash.
 > use tags to indicate the purposes of notes, e.g. `project/article`, and I use
 > links for grouping by topics. But on DEV, tags would correspond to topics.
 
+### Series
+
+If the article is part of a series, you write the series name in the
+`dev-series` metadata property.
+
+TODO: Support this being a link to another note about the series itself, and
+read the name from that note, the title, or a metadata property.
+
+NOTE: At the time of writing this, I have not created a series on DEV, but I can
+see that the value is set when editing the series for my unpublished test
+articles.
+
 ### Example
 
 Given, `My portfolio.md` exists in the vault with the following contents
