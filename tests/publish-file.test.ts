@@ -57,23 +57,62 @@ describe("Publish a file from a TFile structure", () => {
       expect(obsidianFile.frontmatter["dev-article-id"]).to.equal(43);
     });
 
-    it("Should not create `tags` if none exists in frontmatter", async () => {
-      // This is already the default state, but I want the test to make this explicit
-      delete obsidianFile.frontmatter["dev-tags"];
-      await publisher.publish(obsidianFile);
-      const article = gateway.createArticle.firstCall.args[0];
-      article.should.not.haveOwnProperty("tags");
-    });
+    describe("Publishing tags", () => {
+      it("Should not create `tags` if none exists in frontmatter", async () => {
+        // This is already the default state, but I want the test to make this explicit
+        delete obsidianFile.frontmatter["dev-tags"];
+        await publisher.publish(obsidianFile);
+        const article = gateway.createArticle.firstCall.args[0];
+        article.should.not.haveOwnProperty("tags");
+      });
 
-    it("Should create `tags` if they exists in frontmatter", async () => {
-      // This is already the default state, but I want the test to make this explicit
-      obsidianFile.frontmatter["dev-tags"] = ["tag1", "tag2"];
-      await publisher.publish(obsidianFile);
-      gateway.createArticle.should.have.been.calledOnceWith(
-        match({
-          article: { tags: ["tag1", "tag2"] },
-        }),
-      );
+      it("Should create `tags` if they exists in frontmatter", async () => {
+        // This is already the default state, but I want the test to make this explicit
+        obsidianFile.frontmatter["dev-tags"] = ["tag1", "tag2"];
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledOnceWith(
+          match({
+            article: { tags: ["tag1", "tag2"] },
+          }),
+        );
+      });
+
+      it("Should ignore tags if not an array", async () => {
+        obsidianFile.frontmatter["dev-tags"] = 42;
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledOnceWith(
+          match({
+            article: { tags: undefined },
+          }),
+        );
+      });
+
+      it("Should filter out tags that are not strings", async () => {
+        obsidianFile.frontmatter["dev-tags"] = ["foo", {}, "bar"];
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledOnceWith(
+          match({
+            article: { tags: ["foo", "bar"] },
+          }),
+        );
+      });
+
+      it("Should truncate if there are more than 4 tags", async () => {
+        obsidianFile.frontmatter["dev-tags"] = [
+          "Tag-1",
+          "Tag-2",
+          "Tag-3",
+          "Tag-4",
+          "Tag-5",
+          "Tag-6",
+        ];
+        await publisher.publish(obsidianFile);
+        gateway.createArticle.should.have.been.calledOnceWith(
+          match({
+            article: { tags: ["Tag-1", "Tag-2", "Tag-3", "Tag-4"] },
+          }),
+        );
+      });
     });
 
     describe("Contents does not contains frontmatter", () => {

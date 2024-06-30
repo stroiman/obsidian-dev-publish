@@ -1,6 +1,4 @@
-import type {
-  requestUrl,
-} from "obsidian";
+import type { requestUrl } from "obsidian";
 import { HttpResponse } from "src/medium-gateway";
 
 type RequestUrl = typeof requestUrl;
@@ -56,6 +54,7 @@ export const fetchRequestUrlWrapper = async (
   const fetchResponse = await fetch(options.url, fetchOptions);
   const throwOnError = options.throw ?? true; // Default value in obsidian
   if (!fetchResponse.ok && throwOnError) {
+    console.error("Server status", fetchResponse.status);
     throw new Error("Error from server");
   }
   const json = fetchResponse.json();

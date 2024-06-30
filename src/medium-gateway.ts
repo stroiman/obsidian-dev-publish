@@ -4,6 +4,7 @@ import { Json } from "./publisher";
 type Article = {
   title: string;
   markdown: string;
+  tags?: string[];
   // eventually tags - from frontmatter
 };
 
@@ -12,7 +13,7 @@ const bodyFromArticle = (article: Article) => ({
     title: article.title,
     published: false,
     body_markdown: article.markdown,
-    tags: [],
+    tags: article.tags,
     // series: "Hello series", // TODO, what about series?
   },
 });

@@ -54,6 +54,22 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
      */
   });
 
+  it.skip("Can read from DEV", async () => {
+    const articleId = 1875646;
+    try {
+      const response = await fetchRequestUrlWrapper({
+        url: `https://dev.to/api/articles/${articleId}`,
+        method: "GET",
+        headers: {
+          "api-key": process.env.DEV_API_KEY as string,
+        },
+      });
+      console.log("REsult", await response.json);
+    } catch (err) {
+      console.log("Err", err);
+    }
+  });
+
   it.skip("Dev feedback - explore creating a rich article", async () => {
     const articleId = 1875096;
     const body = {

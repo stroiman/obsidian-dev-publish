@@ -162,10 +162,17 @@ export default class Publisher<TFile extends { path: string }> {
   }
 
   async getArticleData(file: TFile) {
+    const parseTags = (tags: Json | undefined) => {
+      if (!Array.isArray(tags)) {
+        return undefined;
+      }
+      return tags.filter((x) => typeof x === "string").slice(0, 4);
+    };
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const markdown = await this.generateMarkdown(file);
     const title = this.generateTitle(file);
-    const tags = metadataCache?.frontmatter?.["dev-tags"];
+    const tags = parseTags(metadataCache?.frontmatter?.["dev-tags"]);
+
     return {
       title,
       markdown,
