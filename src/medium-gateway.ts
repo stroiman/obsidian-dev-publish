@@ -11,7 +11,6 @@ export type Article = {
 
 const bodyFromArticle = ({ markdown, ...rest }: Article) => ({
   article: {
-    published: false,
     body_markdown: markdown,
     ...rest,
   },
@@ -22,7 +21,7 @@ export const postArticle = async (
   requestUrl: MakeHttpRequest,
 ) => {
   const body = bodyFromArticle(input.article);
-  console.log("Create dev article", { body });
+  console.log("Create dev article", { ...body, published: false });
   const response = await requestUrl({
     url: "https://dev.to/api/articles",
     method: "POST",
