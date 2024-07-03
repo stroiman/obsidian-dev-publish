@@ -1,7 +1,7 @@
 {
 	"id": "publish-to-dev",
 	"name": "Publish to DEV",
-	"version": "0.8.0",
+	"version": "0.9.0",
 	"minAppVersion": "0.15.0",
 	"description": "Publish and update notes as articles on DEV (https://dev.to)",
 	"author": "Peter Strøiman",
