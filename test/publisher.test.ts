@@ -77,7 +77,7 @@ describe("Publish a file from a TFile structure", () => {
     });
   });
 
-  it("Should _update_ if the file has already been published", async () => {
+  it("Should _update_ if the file has already been created", async () => {
     const obsidianFile = createFakeFile({
       frontmatter: { "dev-article-id": 42 },
     });
@@ -89,7 +89,7 @@ describe("Publish a file from a TFile structure", () => {
     );
   });
 
-  describe("The file has not been published", () => {
+  describe("The file has not been created", () => {
     let obsidianFile: FakeFile;
 
     beforeEach(() => {
