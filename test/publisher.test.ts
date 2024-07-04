@@ -25,6 +25,58 @@ describe("Publish a file from a TFile structure", () => {
     );
   });
 
+  describe("Update status", () => {
+    it("Should do nothing if no article id is present", async () => {
+      const obsidianFile = createFakeFile({
+        frontmatter: {
+          "dev-article-id": undefined as any,
+        },
+      });
+      await publisher.updateStatus(obsidianFile);
+      gateway.getArticleStatus.should.not.have.been.called;
+    });
+
+    it("Should leave url and canonicalUrl alone when a file is not published", async () => {
+      const obsidianFile = createFakeFile({
+        frontmatter: {
+          "dev-article-id": 42,
+          "dev-url": "https://example.com/temporary_url",
+          "dev-canonical-url": "https://example.com/temporary_canonical_url",
+        },
+      });
+      gateway.getArticleStatus.resolves({ published: false });
+      await publisher.updateStatus(obsidianFile);
+      obsidianFile.frontmatter.should.be.like({
+        "dev-article-id": 42,
+        "dev-published": false,
+        "dev-url": "https://example.com/temporary_url",
+        "dev-canonical-url": "https://example.com/temporary_canonical_url",
+      });
+    });
+
+    it("Should update url and canonicalUrl when a file is published", async () => {
+      const obsidianFile = createFakeFile({
+        frontmatter: {
+          "dev-article-id": 42,
+          "dev-url": "https://example.com/temporary_url",
+          "dev-canonical-url": "https://example.com/temporary_canonical_url",
+        },
+      });
+      gateway.getArticleStatus.resolves({
+        published: true,
+        url: "https://example.com/published_url",
+        canonicalUrl: "https://example.com/published_canonical_url",
+      });
+      await publisher.updateStatus(obsidianFile);
+      obsidianFile.frontmatter.should.be.like({
+        "dev-article-id": 42,
+        "dev-published": true,
+        "dev-url": "https://example.com/published_url",
+        "dev-canonical-url": "https://example.com/published_canonical_url",
+      });
+    });
+  });
+
   it("Should _update_ if the file has already been published", async () => {
     const obsidianFile = createFakeFile({
       frontmatter: { "dev-article-id": 42 },
