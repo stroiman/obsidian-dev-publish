@@ -21,7 +21,6 @@ export const postArticle = async (
   requestUrl: MakeHttpRequest,
 ) => {
   const body = bodyFromArticle(input.article);
-  console.log("Create dev article", { ...body, published: false });
   const response = await requestUrl({
     url: "https://dev.to/api/articles",
     method: "POST",
@@ -59,6 +58,7 @@ export type CreateArticleResult = {
 };
 
 export type HttpResponse = {
+  status: number;
   json: Promise<Json>;
 };
 
@@ -132,5 +132,28 @@ export default class MediumGateway {
       { apiKey: this.apiKey, article: input.article, articleId: input.id },
       this.requestUrl,
     );
+  }
+
+  async getArticleStatus(input: { id: number }) {
+    const params: RequestUrlParam = {
+      url: `https://dev.to/api/articles/${input.id}`,
+      throw: false,
+    };
+    const response = await this.requestUrl(params);
+    switch (response.status) {
+      case 404:
+        return { published: false };
+      case 200: {
+        const data = await response.json;
+        if (!(data && typeof data === "object" && "published_at" in data)) {
+          throw new Error(
+            "Unexpected response from DEV. Please file an issue, and attach the console logs (check if they contain any sensitive information data first)",
+          );
+        }
+        return { published: true };
+      }
+      default:
+        throw new Error("Unexpected status");
+    }
   }
 }

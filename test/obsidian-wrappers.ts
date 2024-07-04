@@ -58,5 +58,5 @@ export const fetchRequestUrlWrapper = async (
     throw new Error("Error from server");
   }
   const json = fetchResponse.json();
-  return { json };
+  return { json, status: fetchResponse.status };
 };
