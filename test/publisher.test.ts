@@ -77,16 +77,45 @@ describe("Publish a file from a TFile structure", () => {
     });
   });
 
-  it("Should _update_ if the file has already been created", async () => {
-    const obsidianFile = createFakeFile({
-      frontmatter: { "dev-article-id": 42 },
+  describe("Article has previously been created", () => {
+    describe("Article has not yet been published", () => {
+      beforeEach(async () => {
+        gateway.getArticleStatus.resolves({ published: false });
+      });
+
+      it("Should _update_ if the file has already been created", async () => {
+        const obsidianFile = createFakeFile({
+          frontmatter: { "dev-article-id": 42 },
+        });
+        await publisher.publish(obsidianFile);
+        gateway.updateArticle.should.have.been.calledOnceWith(
+          match({
+            id: 42,
+          }),
+        );
+      });
     });
-    await publisher.publish(obsidianFile);
-    gateway.updateArticle.should.have.been.calledOnceWith(
-      match({
-        id: 42,
-      }),
-    );
+
+    describe("Article has been publisked", () => {
+      beforeEach(() => {
+        gateway.getArticleStatus.resolves({
+          published: true,
+          url: "https://example.com/url",
+          canonicalUrl: "https://example.com/canonical_url",
+        });
+      });
+
+      it("Should update properties", async () => {
+        const obsidianFile = createFakeFile({
+          frontmatter: { "dev-article-id": 42 },
+        });
+        await publisher.publish(obsidianFile);
+        obsidianFile.frontmatter.should.be.like({
+          "dev-url": "https://example.com/url",
+          "dev-canonical-url": "https://example.com/canonical_url",
+        });
+      });
+    });
   });
 
   describe("The file has not been created", () => {

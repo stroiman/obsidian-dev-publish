@@ -218,6 +218,7 @@ export default class Publisher<TFile extends { path: string }> {
     const mediumId = frontmatter && frontmatter[ARTICLE_ID_KEY];
     const article = await this.getArticleData(file);
     if (typeof mediumId === "number") {
+      await this.updateStatus(file);
       await this.gateway.updateArticle({ id: mediumId, article });
     } else {
       const result = await this.gateway.createArticle({ article });

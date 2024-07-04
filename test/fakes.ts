@@ -82,7 +82,7 @@ export const getLinks = (data: string) => {
 };
 
 export const getMetadata = (file: FakeFile): CachedMetadata => {
-  const { frontmatter, contents } = file
+  const { frontmatter, contents } = file;
   const links = getLinks(contents);
   const headings = getHeadings(contents);
   return { headings, links, frontmatter };
@@ -147,10 +147,16 @@ export class FakeApp implements GenericApp<FakeFile> {
   }
 }
 
+export const createGatewayStub = () => {
+  const result = sinon.createStubInstance(MediumGateway);
+  result.getArticleStatus.resolves({ published: false });
+  return result;
+};
+
 export const createPublisher = (app: FakeApp, gateway?: MediumGateway) => {
   return new Publisher(
     app,
-    gateway || sinon.createStubInstance(MediumGateway),
+    gateway || createGatewayStub(),
     new FakeGetFrontMatterInfo(),
   );
 };
