@@ -9,6 +9,18 @@ export type Article = {
   // eventually tags - from frontmatter
 };
 
+type ArticleStatusPublished = {
+  published: true;
+  url: string;
+  canonicalUrl: string;
+};
+
+type ArticleStatusUnpublished = {
+  published: false;
+};
+
+export type ArticleStatus = ArticleStatusPublished | ArticleStatusUnpublished;
+
 const bodyFromArticle = ({ markdown, ...rest }: Article) => ({
   article: {
     body_markdown: markdown,
@@ -21,7 +33,6 @@ export const postArticle = async (
   requestUrl: MakeHttpRequest,
 ) => {
   const body = bodyFromArticle(input.article);
-  console.log("Create dev article", { ...body, published: false });
   const response = await requestUrl({
     url: "https://dev.to/api/articles",
     method: "POST",
@@ -59,6 +70,7 @@ export type CreateArticleResult = {
 };
 
 export type HttpResponse = {
+  status: number;
   json: Promise<Json>;
 };
 
@@ -74,7 +86,7 @@ type GetValidatedObjectType<T extends GenericObjectValidator> = {
 };
 
 const isNumber = (x: unknown): x is number => typeof x === "number";
-const isString = (x: unknown): x is string => typeof x === "string";
+const isString = (x: unknown) => typeof x === "string";
 const isObjectType = (x: unknown): x is Record<string, unknown> =>
   typeof x === "object" && x !== null;
 
@@ -98,6 +110,14 @@ const isObject = <T extends GenericObjectValidator>(
   return true;
 };
 
+const verifyArticle = (data: unknown) => {
+  return isObject(data, {
+    id: isNumber,
+    url: isString,
+    canonical_url: isString,
+  });
+};
+
 export default class MediumGateway {
   apiKey: string;
   requestUrl: MakeHttpRequest;
@@ -114,13 +134,7 @@ export default class MediumGateway {
       { apiKey: this.apiKey, article: input.article },
       this.requestUrl,
     );
-    if (
-      !isObject(temp, {
-        id: isNumber,
-        url: isString,
-        canonical_url: isString,
-      })
-    ) {
+    if (!verifyArticle(temp)) {
       throw new Error("Bad response");
     }
     const { id, url, canonical_url } = temp;
@@ -132,5 +146,35 @@ export default class MediumGateway {
       { apiKey: this.apiKey, article: input.article, articleId: input.id },
       this.requestUrl,
     );
+  }
+
+  async getArticleStatus(input: { id: number }): Promise<ArticleStatus> {
+    const params: RequestUrlParam = {
+      url: `https://dev.to/api/articles/${input.id}`,
+      throw: false,
+    };
+    const response = await this.requestUrl(params);
+    switch (response.status) {
+      case 404:
+        return { published: false };
+      case 200: {
+        const data = await response.json;
+        if (!(data && typeof data === "object" && "published_at" in data)) {
+          throw new Error(
+            "Unexpected response from DEV. Please file an issue, and attach the console logs (check if they contain any sensitive information data first)",
+          );
+        }
+        if (!verifyArticle(data)) {
+          throw new Error("Bad data retrieved from server");
+        }
+        return {
+          published: true,
+          url: data.url,
+          canonicalUrl: data.canonical_url,
+        };
+      }
+      default:
+        throw new Error("Unexpected status");
+    }
   }
 }

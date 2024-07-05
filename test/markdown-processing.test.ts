@@ -1,7 +1,12 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import MediumGateway from "src/medium-gateway";
-import { createPublisher, FakeApp, FakeFile } from "./fakes";
+import {
+  createGatewayStub as createGatewayStubWithDefaults,
+  createPublisher,
+  FakeApp,
+  FakeFile,
+} from "./fakes";
 import Publisher from "src/publisher";
 
 describe("Mathjax resolution", () => {
@@ -100,7 +105,7 @@ describe("Link resolution", () => {
     fakeApp.metadataCache.setLinkTarget("File2", path, file2);
     fileToPublish.contents = `Line1: [[File1]]\nLine2: [[File2]]\nLine3: [[File3]]`;
 
-    const gateway = sinon.createStubInstance(MediumGateway);
+    const gateway = createGatewayStubWithDefaults();
     const publisher = createPublisher(fakeApp, gateway);
     await publisher.publish(fileToPublish);
     gateway.updateArticle.should.have.been.calledOnce;
@@ -117,7 +122,7 @@ describe("Link resolution", () => {
     });
     fileToPublish.contents = `Line1: [[File1]]\n\n# Heading\n\nLine2: [[File2]]\nLine3: [[File3]]`;
 
-    const gateway = sinon.createStubInstance(MediumGateway);
+    const gateway = createGatewayStubWithDefaults();
     const publisher = createPublisher(fakeApp, gateway);
     await publisher.publish(fileToPublish);
     gateway.updateArticle.should.have.been.calledOnce;

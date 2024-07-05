@@ -10,6 +10,7 @@ import MediumGateway, { Article } from "./medium-gateway";
 const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
+const ARTICLE_PUBLISHED = "dev-published";
 
 export type JsonObject = { [key: string]: Json };
 export type Json = string | number | boolean | null | Json[] | JsonObject;
@@ -217,6 +218,7 @@ export default class Publisher<TFile extends { path: string }> {
     const mediumId = frontmatter && frontmatter[ARTICLE_ID_KEY];
     const article = await this.getArticleData(file);
     if (typeof mediumId === "number") {
+      await this.updateStatus(file);
       await this.gateway.updateArticle({ id: mediumId, article });
     } else {
       const result = await this.gateway.createArticle({ article });
@@ -226,6 +228,22 @@ export default class Publisher<TFile extends { path: string }> {
         [ARTICLE_CANONICAL_URL_KEY]: result.canonicalUrl,
       };
       this.updateFrontmatter(file, newFrontmatter);
+    }
+  }
+
+  async updateStatus(file: TFile) {
+    // Get status from DEV, and update URLs
+    const frontmatter = this.getFrontMatter(file);
+    const id: any = frontmatter && frontmatter[ARTICLE_ID_KEY];
+    if (typeof id === "number") {
+      const status = await this.gateway.getArticleStatus({ id });
+      await this.fileManager.processFrontMatter(file, (fm) => {
+        fm[ARTICLE_PUBLISHED] = status.published;
+        if (status.published) {
+          fm[ARTICLE_URL_KEY] = status.url;
+          fm[ARTICLE_CANONICAL_URL_KEY] = status.canonicalUrl;
+        }
+      });
     }
   }
 }
