@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && npm run test && eslint . && node esbuild.config.mjs production",
-    "version:update-changelog": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
+    "version:update-changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --config changelog-config.js && git add CHANGELOG.md",
     "version:update-manifest": "node version-bump.mjs && git add manifest.json versions.json",
     "version": "npm run version:update-changelog && npm run version:update-manifest",
     "test": "NODE_OPTIONS='--import tsx' mocha -R min --forbid-only",
