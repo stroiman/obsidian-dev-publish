@@ -44,8 +44,11 @@ export default class DevPublishPlugin extends Plugin {
               },
               (err) => {
                 console.error("Error publishing to dev.to", err);
-                new Notice("Publish to DEV: Creating/updating DEV article failed. \nPlease check your access token, and try again.\nIf you wish to file a bug report, please see the project readme page.", 0);
-              }
+                new Notice(
+                  "Publish to DEV: Creating/updating DEV article failed. \nPlease check your access token, and try again.\nIf you wish to file a bug report, please see the project readme page.",
+                  0,
+                );
+              },
             );
           }
           return true;
@@ -57,7 +60,7 @@ export default class DevPublishPlugin extends Plugin {
     this.addSettingTab(new DevPublishSettingTab(this.app, this));
   }
 
-  onunload() { }
+  onunload() {}
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -81,10 +84,12 @@ class DevPublishSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-
     new Setting(containerEl)
       .setName("API key")
-      .setDesc(sanitizeHTMLToDom("<b>Security warning!</b><br />This will be stored unencrypted in your obsidian plugin folder. Do not use this plugin if you do not fully understand the security implications of this.")
+      .setDesc(
+        sanitizeHTMLToDom(
+          "<b>Security warning!</b><br />This will be stored unencrypted in your obsidian plugin folder. Do not use this plugin if you do not fully understand the security implications of this.",
+        ),
       )
       .addText((text) =>
         text
