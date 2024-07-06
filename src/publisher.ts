@@ -287,12 +287,14 @@ export default class Publisher<TFile extends { path: string }> {
         ) || [];
 
     const result = await dialogController.showImageMappingDialog(list);
-    await this.app.fileManager.processFrontMatter(file, (fm) => {
-      fm[ARTICLE_IMAGE_MAP_KEY] =
-        result &&
-        result
-          .map((x) => ({ ...x, imageFile: `[[${x.imageFile}]]` }))
-          .filter((x) => x.publicUrl);
-    });
+    if (result) {
+      await this.app.fileManager.processFrontMatter(file, (fm) => {
+        fm[ARTICLE_IMAGE_MAP_KEY] =
+          result &&
+          result
+            .map((x) => ({ ...x, imageFile: `[[${x.imageFile}]]` }))
+            .filter((x) => x.publicUrl);
+      });
+    }
   }
 }

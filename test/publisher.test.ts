@@ -87,13 +87,16 @@ describe("Publish a file from a TFile structure", () => {
     });
 
     context("When frontmatter already contains mapping information", () => {
-      it("Prefills targets with values from metadata", async () => {
+      beforeEach(() => {
         fileWithImageEmbeds.frontmatter["dev-image-map"] = [
           {
             imageFile: "[[image1.png]]",
             publicUrl: "https://example.com/image1.png",
           },
         ];
+      });
+
+      it("Prefills targets with values from metadata", async () => {
         await publisher.mapImages(fileWithImageEmbeds, dialogController);
         showImageMappingDialog.should.have.been.calledOnceWith(
           match([
@@ -106,7 +109,16 @@ describe("Publish a file from a TFile structure", () => {
         );
       });
 
-      it("Does not change existing frontmatter when cancelled", () => {});
+      it("Does not change existing frontmatter when cancelled", async () => {
+        showImageMappingDialog.resolves(null);
+        await publisher.mapImages(fileWithImageEmbeds, dialogController);
+        expect(fileWithImageEmbeds.frontmatter["dev-image-map"]).to.deep.equal([
+          {
+            imageFile: "[[image1.png]]",
+            publicUrl: "https://example.com/image1.png",
+          },
+        ]);
+      });
     });
   });
 
@@ -181,7 +193,7 @@ describe("Publish a file from a TFile structure", () => {
       });
     });
 
-    describe("Article has been publisked", () => {
+    describe("Article has been published", () => {
       beforeEach(() => {
         gateway.getArticleStatus.resolves({
           published: true,
