@@ -32,6 +32,10 @@ type Pos = {
   end: Loc;
 };
 
+export type EmbedCache = Omit<obsidian.EmbedCache, "position"> & {
+  position: Pos;
+};
+
 export type HeadingCache = Omit<obsidian.HeadingCache, "position"> & {
   position: Pos;
 };
@@ -44,9 +48,10 @@ export type LinkCache = {
 };
 
 export type CachedMetadata = {
+  frontmatter?: JsonObject;
   links?: LinkCache[];
   headings?: HeadingCache[];
-  frontmatter?: JsonObject;
+  embeds?: EmbedCache[];
 };
 
 export interface GenericMetadataCache<TFile> {

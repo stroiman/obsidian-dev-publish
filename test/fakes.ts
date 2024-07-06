@@ -7,6 +7,7 @@ import {
   GenericMetadataCache,
   GenericVault,
   HeadingCache,
+  EmbedCache,
   LinkCache,
 } from "src/interfaces";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
@@ -57,24 +58,55 @@ export const getHeadings = (data: string): HeadingCache[] => {
   return headings;
 };
 
+export const getEmbeds = (data: string): EmbedCache[] => {
+  const matches = [
+    ...data.matchAll(/!\[{2}(?<link>[^|\]]*)(?:\|(?<displayText>.+))?\]{2}/g),
+  ];
+  return matches.map((match) => {
+    const start = match.index;
+    const end = match[0].length + start;
+    const { link, displayText } = match.groups!; // eslint-disable-line
+    if (!displayText) {
+      return {
+        link: link,
+        original: match[0],
+        position: {
+          start: { offset: start },
+          end: { offset: end },
+        },
+      };
+    } else {
+      return {
+        link: link,
+        original: match[0],
+        displayText,
+        position: {
+          start: { offset: start },
+          end: { offset: end },
+        },
+      };
+    }
+  });
+};
+
 export const getLinks = (data: string) => {
   const links: LinkCache[] = [];
 
   const matches = data.matchAll(
-    /\[\[(?<link>[^\]|]+)(?:\|(?<alias>[^\]]*))?\]\]/g,
+    /[^!](?<original>\[{2}(?<link>[^\]|]+)(?:\|(?<alias>[^\]]*))?\]\])/g,
   );
   for (const match of matches) {
-    const index = match.index!;
     const link = match.groups!.link;
     const displayText = match.groups!.alias || link;
-    const original = match[0];
+    const original = match.groups!.original;
+    const index = match.index!;
     links.push({
       link,
       displayText,
       original,
       position: {
-        start: { offset: index },
-        end: { offset: index + original.length },
+        start: { offset: index + 1 },
+        end: { offset: index + match[0].length },
       },
     });
   }
@@ -85,7 +117,8 @@ export const getMetadata = (file: FakeFile): CachedMetadata => {
   const { frontmatter, contents } = file;
   const links = getLinks(contents);
   const headings = getHeadings(contents);
-  return { headings, links, frontmatter };
+  const embeds = getEmbeds(contents);
+  return { headings, links, frontmatter, embeds };
 };
 
 export class FakeMetadataCache implements GenericMetadataCache<FakeFile> {
@@ -147,7 +180,7 @@ export class FakeApp implements GenericApp<FakeFile> {
   }
 }
 
-export const createGatewayStub = () => {
+export const createGatewayStubWithDefaults = () => {
   const result = sinon.createStubInstance(MediumGateway);
   result.getArticleStatus.resolves({ published: false });
   return result;
@@ -156,7 +189,7 @@ export const createGatewayStub = () => {
 export const createPublisher = (app: FakeApp, gateway?: MediumGateway) => {
   return new Publisher(
     app,
-    gateway || createGatewayStub(),
+    gateway || createGatewayStubWithDefaults(),
     new FakeGetFrontMatterInfo(),
   );
 };

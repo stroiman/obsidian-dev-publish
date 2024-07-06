@@ -8,6 +8,7 @@ import {
   sanitizeHTMLToDom,
   Setting,
 } from "obsidian";
+import { TheDialogController } from "src/image-mapping-dialog";
 import MediumGateway from "src/medium-gateway";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
 import Publisher from "src/publisher";
@@ -26,6 +27,24 @@ export default class DevPublishPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
+    this.addCommand({
+      id: "map-image-files",
+      name: "Map embedded images to public URLs",
+      checkCallback: (checking: boolean) => {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (view && view.file) {
+          if (!checking) {
+            const publisher = new Publisher(
+              this.app,
+              new MediumGateway(this.settings.apiKey, requestUrl),
+              new GetFrontMatterInfo(),
+            );
+            publisher.mapImages(view.file, new TheDialogController(this.app));
+          }
+          return true;
+        }
+      },
+    });
     this.addCommand({
       id: "publish-current-note",
       name: "Create/update article",

@@ -4,6 +4,7 @@ import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
 import { FakeApp, FakeFile, FakeGetFrontMatterInfo } from "./fakes";
 import { expect } from "chai";
+import { DialogController } from "../src/image-mapping-dialog";
 
 const createPostArticleResponse = (input?: Partial<CreateArticleResult>) => ({
   id: 1,
@@ -23,6 +24,102 @@ describe("Publish a file from a TFile structure", () => {
       gateway,
       new FakeGetFrontMatterInfo(),
     );
+  });
+
+  describe("Map images", () => {
+    let fileWithImageEmbeds: FakeFile;
+    let dialogController: DialogController;
+    let showImageMappingDialog: sinon.SinonStub;
+
+    beforeEach(() => {
+      fileWithImageEmbeds = createFakeFile({
+        contents: "foobar ![[image1.png]] baz ![[folder/image2.png]]",
+      });
+      showImageMappingDialog = sinon.stub();
+      dialogController = { showImageMappingDialog };
+    });
+
+    it("Opens the image dialog initialised with images embeds from the markdown", async () => {
+      await publisher.mapImages(fileWithImageEmbeds, dialogController);
+      showImageMappingDialog.resolves(null);
+      dialogController.showImageMappingDialog.should.have.been.calledOnceWith(
+        match([
+          match({ imageFile: "image1.png" }),
+          match({ imageFile: "folder/image2.png" }),
+        ]),
+      );
+    });
+
+    it("Updates the metadata on close", async () => {
+      showImageMappingDialog.resolves([
+        {
+          imageFile: "image1.png",
+          publicUrl: "https://example.com/image1.png",
+        },
+        {
+          imageFile: "folder/image2.png",
+          publicUrl: "",
+        },
+      ]);
+      await publisher.mapImages(fileWithImageEmbeds, dialogController);
+      expect(fileWithImageEmbeds.frontmatter["dev-image-map"]).to.be.like([
+        {
+          imageFile: "[[image1.png]]",
+          publicUrl: "https://example.com/image1.png",
+        },
+      ]);
+    });
+
+    it("Ignores non-image embeds", async () => {
+      const file = createFakeFile({
+        contents:
+          "foobar ![[image1.png]] baz ![[markdown embed]] ![[pdf-embed.pdf]]",
+      });
+      await publisher.mapImages(file, dialogController);
+      expect(showImageMappingDialog).to.have.been.calledOnceWith(
+        match([
+          {
+            imageFile: "image1.png",
+            publicUrl: "",
+          },
+        ]),
+      );
+    });
+
+    context("When frontmatter already contains mapping information", () => {
+      beforeEach(() => {
+        fileWithImageEmbeds.frontmatter["dev-image-map"] = [
+          {
+            imageFile: "[[image1.png]]",
+            publicUrl: "https://example.com/image1.png",
+          },
+        ];
+      });
+
+      it("Prefills targets with values from metadata", async () => {
+        await publisher.mapImages(fileWithImageEmbeds, dialogController);
+        showImageMappingDialog.should.have.been.calledOnceWith(
+          match([
+            match({
+              imageFile: "image1.png",
+              publicUrl: "https://example.com/image1.png",
+            }),
+            { imageFile: "folder/image2.png", publicUrl: "" },
+          ]),
+        );
+      });
+
+      it("Does not change existing frontmatter when cancelled", async () => {
+        showImageMappingDialog.resolves(null);
+        await publisher.mapImages(fileWithImageEmbeds, dialogController);
+        expect(fileWithImageEmbeds.frontmatter["dev-image-map"]).to.deep.equal([
+          {
+            imageFile: "[[image1.png]]",
+            publicUrl: "https://example.com/image1.png",
+          },
+        ]);
+      });
+    });
   });
 
   describe("Update status", () => {
@@ -96,7 +193,7 @@ describe("Publish a file from a TFile structure", () => {
       });
     });
 
-    describe("Article has been publisked", () => {
+    describe("Article has been published", () => {
       beforeEach(() => {
         gateway.getArticleStatus.resolves({
           published: true,

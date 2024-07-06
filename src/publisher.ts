@@ -6,16 +6,27 @@ import {
   GetFrontMatterInfo,
 } from "./interfaces";
 import MediumGateway, { Article } from "./medium-gateway";
+import type { DialogController } from "./image-mapping-dialog";
+import { isArray, isObject, isString } from "./validation";
 
 const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
+const ARTICLE_IMAGE_MAP_KEY = "dev-image-map";
 const ARTICLE_PUBLISHED = "dev-published";
+const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".heif"];
 
 export type JsonObject = { [key: string]: Json };
 export type Json = string | number | boolean | null | Json[] | JsonObject;
 
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
+
+const isImageMap = (input: unknown) =>
+  isObject(input, {
+    publicUrl: isString,
+    imageFile: isString,
+  });
+const isMapping = (input: unknown) => isArray(input, isImageMap);
 
 const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
   const matches = [...jax.matchAll(/(\${1})([^\n$]+)\1/g)];
@@ -129,11 +140,47 @@ export default class Publisher<TFile extends { path: string }> {
     return tmp.flat();
   }
 
+  processImages(_file: TFile, md: CachedMetadata | null): ReplaceInstruction[] {
+    if (!md?.embeds) {
+      return [];
+    }
+    const frontmatter = md.frontmatter;
+    const imageMap = frontmatter && frontmatter[ARTICLE_IMAGE_MAP_KEY];
+    const getExistingMap = (file: string) => {
+      return (
+        isMapping(imageMap) &&
+        imageMap.find((x) => x.imageFile === `[[${file}]]`)?.publicUrl
+      );
+    };
+
+    return md.embeds.flatMap((embed): ReplaceInstruction[] => {
+      const publicUrl = getExistingMap(embed.link);
+      const displayText = embed.displayText || embed.link;
+      const { start, end } = embed.position;
+      return publicUrl
+        ? [
+            {
+              replaceString: `![${displayText}](${publicUrl})`,
+              from: start.offset,
+              to: end.offset,
+            },
+          ]
+        : [];
+    });
+  }
+
   async generateMarkdown(file: TFile) {
     const originalContents = await this.vault.read(file);
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const frontmatter = metadataCache?.frontmatter || {};
-    const replaceInstructions = await this.processLinks(file, metadataCache);
+    const markdownLinkReplaceInstructions = await this.processLinks(
+      file,
+      metadataCache,
+    );
+    const imageEmbedsReplaceInstructions = this.processImages(
+      file,
+      metadataCache,
+    );
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
     const h1Instructions = h1
       ? [
@@ -146,20 +193,24 @@ export default class Publisher<TFile extends { path: string }> {
       : [];
 
     if (frontmatter["dev-enable-mathjax"]) {
-      replaceInstructions.splice(
-        replaceInstructions.length,
+      markdownLinkReplaceInstructions.splice(
+        markdownLinkReplaceInstructions.length,
         0,
         ...processInlineMathJax(originalContents),
       );
-      replaceInstructions.splice(
-        replaceInstructions.length,
+      markdownLinkReplaceInstructions.splice(
+        markdownLinkReplaceInstructions.length,
         0,
         ...processBlockMathJax(originalContents),
       );
     }
 
     const dataAfterHeading = this.applyReplaceInstruction(
-      [h1Instructions, replaceInstructions].flat(),
+      [
+        h1Instructions,
+        markdownLinkReplaceInstructions,
+        imageEmbedsReplaceInstructions,
+      ].flat(),
       originalContents,
     );
     const frontmatterInfo =
@@ -243,6 +294,46 @@ export default class Publisher<TFile extends { path: string }> {
           fm[ARTICLE_URL_KEY] = status.url;
           fm[ARTICLE_CANONICAL_URL_KEY] = status.canonicalUrl;
         }
+      });
+    }
+  }
+
+  async mapImages(file: TFile, dialogController: DialogController) {
+    const md = this.app.metadataCache.getFileCache(file);
+    if (!md) {
+      return;
+    }
+    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+    const imageMap = frontmatter && frontmatter[ARTICLE_IMAGE_MAP_KEY];
+    const getExistingMap = (file: string) => {
+      return (
+        isMapping(imageMap) &&
+        imageMap.find((x) => x.imageFile === `[[${file}]]`)?.publicUrl
+      );
+    };
+
+    const getExtension = (link: string) => {
+      const index = link.lastIndexOf(".");
+      return index === -1 ? "" : link.substring(index);
+    };
+    const list =
+      md.embeds
+        ?.map((x) => ({
+          imageFile: x.link,
+          publicUrl: getExistingMap(x.link) || "",
+        }))
+        .filter(({ imageFile }) =>
+          IMAGE_EXTENSIONS.includes(getExtension(imageFile)),
+        ) || [];
+
+    const result = await dialogController.showImageMappingDialog(list);
+    if (result) {
+      await this.app.fileManager.processFrontMatter(file, (fm) => {
+        fm[ARTICLE_IMAGE_MAP_KEY] =
+          result &&
+          result
+            .map((x) => ({ ...x, imageFile: `[[${x.imageFile}]]` }))
+            .filter((x) => x.publicUrl);
       });
     }
   }
