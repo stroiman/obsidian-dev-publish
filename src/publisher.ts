@@ -11,6 +11,7 @@ import type { DialogController } from "./image-mapping-dialog";
 const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
+const ARTICLE_IMAGE_MAP_KEY = "dev-image-map";
 const ARTICLE_PUBLISHED = "dev-published";
 
 export type JsonObject = { [key: string]: Json };
@@ -258,6 +259,13 @@ export default class Publisher<TFile extends { path: string }> {
         imageFile: x.link,
         publicUrl: "",
       })) || [];
-    await dialogController.showImageMappingDialog(list);
+    const result = await dialogController.showImageMappingDialog(list);
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm[ARTICLE_IMAGE_MAP_KEY] =
+        result &&
+        result
+          .map((x) => ({ ...x, imageFile: `[[${x.imageFile}]]` }))
+          .filter((x) => x.publicUrl);
+    });
   }
 }

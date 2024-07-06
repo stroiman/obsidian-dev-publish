@@ -27,23 +27,48 @@ describe("Publish a file from a TFile structure", () => {
   });
 
   describe("Map images", () => {
-    it("Opens the image dialog initialised with images embeds from the markdown", async () => {
-      const fakeFile = createFakeFile({
-        contents: "foobar ![[image1.png]] baz ![[image2.png]]",
+    let fileWithImageEmbeds: FakeFile;
+    let dialogController: DialogController;
+    let showImageMappingDialog: sinon.SinonStub;
+
+    beforeEach(() => {
+      fileWithImageEmbeds = createFakeFile({
+        contents: "foobar ![[image1.png]] baz ![[folder/image2.png]]",
       });
-      const dialogController: DialogController = {
-        showImageMappingDialog: sinon.stub().resolves(null),
-      };
-      await publisher.mapImages(fakeFile, dialogController);
+      showImageMappingDialog = sinon.stub();
+      dialogController = { showImageMappingDialog };
+    });
+
+    it("Opens the image dialog initialised with images embeds from the markdown", async () => {
+      await publisher.mapImages(fileWithImageEmbeds, dialogController);
+      showImageMappingDialog.resolves(null);
       dialogController.showImageMappingDialog.should.have.been.calledOnceWith(
         match([
           match({ imageFile: "image1.png" }),
-          match({ imageFile: "image2.png" }),
+          match({ imageFile: "folder/image2.png" }),
         ]),
       );
     });
 
-    it("Updates the metadata on close");
+    it("Updates the metadata on close", async () => {
+      showImageMappingDialog.resolves([
+        {
+          imageFile: "image1.png",
+          publicUrl: "https://example.com/image1.png",
+        },
+        {
+          imageFile: "folder/image2.png",
+          publicUrl: "",
+        },
+      ]);
+      await publisher.mapImages(fileWithImageEmbeds, dialogController);
+      expect(fileWithImageEmbeds.frontmatter["dev-image-map"]).to.be.like([
+        {
+          imageFile: "[[image1.png]]",
+          publicUrl: "https://example.com/image1.png",
+        },
+      ]);
+    });
 
     // What filetypes to use? .png, .jpg, .jpeg, .gif, .webp, .heif
     it("Ignores non-image embeds");
