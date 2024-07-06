@@ -51,7 +51,7 @@ export type CachedMetadata = {
   frontmatter?: JsonObject;
   links?: LinkCache[];
   headings?: HeadingCache[];
-  embeds?: obsidian.EmbedCache[];
+  embeds?: EmbedCache[];
 };
 
 export interface GenericMetadataCache<TFile> {
