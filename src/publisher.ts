@@ -6,6 +6,7 @@ import {
   GetFrontMatterInfo,
 } from "./interfaces";
 import MediumGateway, { Article } from "./medium-gateway";
+import type { DialogController } from "./image-mapping-dialog";
 
 const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
@@ -245,5 +246,18 @@ export default class Publisher<TFile extends { path: string }> {
         }
       });
     }
+  }
+
+  async mapImages(file: TFile, dialogController: DialogController) {
+    const md = this.app.metadataCache.getFileCache(file);
+    if (!md) {
+      return;
+    }
+    const list =
+      md.embeds?.map((x) => ({
+        imageFile: x.link,
+        publicUrl: "",
+      })) || [];
+    await dialogController.showImageMappingDialog(list);
   }
 }

@@ -4,6 +4,7 @@ import Publisher from "src/publisher";
 import { createFakeFile } from "./factories";
 import { FakeApp, FakeFile, FakeGetFrontMatterInfo } from "./fakes";
 import { expect } from "chai";
+import { DialogController } from "../src/image-mapping-dialog";
 
 const createPostArticleResponse = (input?: Partial<CreateArticleResult>) => ({
   id: 1,
@@ -23,6 +24,34 @@ describe("Publish a file from a TFile structure", () => {
       gateway,
       new FakeGetFrontMatterInfo(),
     );
+  });
+
+  describe("Map images", () => {
+    it("Opens the image dialog initialised with images embeds from the markdown", async () => {
+      const fakeFile = createFakeFile({
+        contents: "foobar ![[image1.png]] baz ![[image2.png]]",
+      });
+      const dialogController: DialogController = {
+        showImageMappingDialog: sinon.stub().resolves(null),
+      };
+      await publisher.mapImages(fakeFile, dialogController);
+      dialogController.showImageMappingDialog.should.have.been.calledOnceWith(
+        match([
+          match({ imageFile: "image1.png" }),
+          match({ imageFile: "image2.png" }),
+        ]),
+      );
+    });
+
+    it("Updates the metadata on close");
+
+    // What filetypes to use? .png, .jpg, .jpeg, .gif, .webp, .heif
+    it("Ignores non-image embeds");
+
+    context("When frontmatter already contains mapping information", () => {
+      it("Prefills targets with values from metadata");
+      it("Does not change existing frontmatter when cancelled", () => {});
+    });
   });
 
   describe("Update status", () => {

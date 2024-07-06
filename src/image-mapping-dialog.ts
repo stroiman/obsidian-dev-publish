@@ -34,7 +34,10 @@ const createTable = (element: HTMLElement, list: EmbeddedImageMapping[]) => {
   return { table, inputs };
 };
 
-export const showDialog = (app: App): Promise<null | ImageMappingList> => {
+const showDialog = (
+  app: App,
+  list: ImageMappingList,
+): Promise<null | ImageMappingList> => {
   return new Promise((resolve) => {
     let submitting = false;
     const result = new Modal(app);
@@ -64,3 +67,23 @@ export const showDialog = (app: App): Promise<null | ImageMappingList> => {
     result.open();
   });
 };
+
+export type ShowImageMappingDialog = (
+  imageMappingList: ImageMappingList,
+) => Promise<ImageMappingList | null>;
+
+class DialogController {
+  private app: App;
+
+  constructor(app: App) {
+    this.app = app;
+  }
+
+  showImageMappingDialog(list: ImageMappingList) {
+    return showDialog(app, list);
+  }
+}
+
+export type { DialogController };
+
+export default { showDialog };
