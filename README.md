@@ -40,6 +40,20 @@ text without the hash.
 > use tags to indicate the purposes of notes, e.g. `project/article`, and I use
 > links for grouping by topics. But on DEV, tags would correspond to topics.
 
+### Images
+
+It is not possible for the plugin to handle images completely. The DEV API does
+not expose the capability of uploading images. This means that you need to
+upload any images manually.
+
+If you later need to update the article, you can now create a mapping from
+embedded image links to the public URL where that resource is available.
+
+Use the "Map embedded images to public URLs" command.
+
+Note: It is intended to integrate this to the workflow of updating a published
+article.
+
 ### Series
 
 If the article is part of a series, you write the series name in the
