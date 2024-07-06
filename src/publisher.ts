@@ -7,17 +7,26 @@ import {
 } from "./interfaces";
 import MediumGateway, { Article } from "./medium-gateway";
 import type { DialogController } from "./image-mapping-dialog";
+import { isArray, isObject, isString } from "./validation";
 
 const ARTICLE_ID_KEY = "dev-article-id";
 const ARTICLE_URL_KEY = "dev-url";
 const ARTICLE_CANONICAL_URL_KEY = "dev-canonical-url";
 const ARTICLE_IMAGE_MAP_KEY = "dev-image-map";
 const ARTICLE_PUBLISHED = "dev-published";
+const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".heif"];
 
 export type JsonObject = { [key: string]: Json };
 export type Json = string | number | boolean | null | Json[] | JsonObject;
 
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
+
+const isImageMap = (input: unknown) =>
+  isObject(input, {
+    publicUrl: isString,
+    imageFile: isString,
+  });
+const isMapping = (input: unknown) => isArray(input, isImageMap);
 
 const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
   const matches = [...jax.matchAll(/(\${1})([^\n$]+)\1/g)];
@@ -254,11 +263,29 @@ export default class Publisher<TFile extends { path: string }> {
     if (!md) {
       return;
     }
+    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+    const imageMap = frontmatter && frontmatter[ARTICLE_IMAGE_MAP_KEY];
+    const getExistingMap = (file: string) => {
+      return (
+        isMapping(imageMap) &&
+        imageMap.find((x) => x.imageFile === `[[${file}]]`)?.publicUrl
+      );
+    };
+
+    const getExtension = (link: string) => {
+      const index = link.lastIndexOf(".");
+      return index === -1 ? "" : link.substring(index);
+    };
     const list =
-      md.embeds?.map((x) => ({
-        imageFile: x.link,
-        publicUrl: "",
-      })) || [];
+      md.embeds
+        ?.map((x) => ({
+          imageFile: x.link,
+          publicUrl: getExistingMap(x.link) || "",
+        }))
+        .filter(({ imageFile }) =>
+          IMAGE_EXTENSIONS.includes(getExtension(imageFile)),
+        ) || [];
+
     const result = await dialogController.showImageMappingDialog(list);
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm[ARTICLE_IMAGE_MAP_KEY] =

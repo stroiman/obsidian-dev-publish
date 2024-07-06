@@ -30,3 +30,6 @@ export const isObject = <T extends GenericObjectValidator>(
   }
   return true;
 };
+
+export const isArray = <T>(input: unknown, spec: Validator<T>): input is T[] =>
+  Array.isArray(input) && input.every((x) => spec(x));

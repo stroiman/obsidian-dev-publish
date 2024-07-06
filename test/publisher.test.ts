@@ -70,11 +70,42 @@ describe("Publish a file from a TFile structure", () => {
       ]);
     });
 
-    // What filetypes to use? .png, .jpg, .jpeg, .gif, .webp, .heif
-    it("Ignores non-image embeds");
+    it("Ignores non-image embeds", async () => {
+      const file = createFakeFile({
+        contents:
+          "foobar ![[image1.png]] baz ![[markdown embed]] ![[pdf-embed.pdf]]",
+      });
+      await publisher.mapImages(file, dialogController);
+      expect(showImageMappingDialog).to.have.been.calledOnceWith(
+        match([
+          {
+            imageFile: "image1.png",
+            publicUrl: "",
+          },
+        ]),
+      );
+    });
 
     context("When frontmatter already contains mapping information", () => {
-      it("Prefills targets with values from metadata");
+      it("Prefills targets with values from metadata", async () => {
+        fileWithImageEmbeds.frontmatter["dev-image-map"] = [
+          {
+            imageFile: "[[image1.png]]",
+            publicUrl: "https://example.com/image1.png",
+          },
+        ];
+        await publisher.mapImages(fileWithImageEmbeds, dialogController);
+        showImageMappingDialog.should.have.been.calledOnceWith(
+          match([
+            match({
+              imageFile: "image1.png",
+              publicUrl: "https://example.com/image1.png",
+            }),
+            { imageFile: "folder/image2.png", publicUrl: "" },
+          ]),
+        );
+      });
+
       it("Does not change existing frontmatter when cancelled", () => {});
     });
   });
