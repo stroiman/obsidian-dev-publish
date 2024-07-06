@@ -1,6 +1,4 @@
 import { expect } from "chai";
-import sinon from "sinon";
-import MediumGateway from "src/medium-gateway";
 import {
   createGatewayStub as createGatewayStubWithDefaults,
   createPublisher,
@@ -85,6 +83,44 @@ c = \\pm\\sqrt{a^2 + b^2}
       const markdown = await publisher.generateMarkdown(file);
       expect(markdown).to.equal(`A paragraph $$CO_2$`);
     });
+  });
+});
+
+describe("Embedbed resolution", () => {
+  it("Handles embeds", () => {
+    const fakeApp = new FakeApp();
+    const file = fakeApp.fileManager.createFakeFile();
+    file.contents = `This is a paragraph.
+With two lines.
+
+![[embedded-image-without-link-text.png]]
+
+This is a paragraph with an image ![[inline-image.png|with link text]] in the
+text.
+`;
+    const md = fakeApp.metadataCache.getFileCache(file);
+    const image1 = md.embeds?.at(0)!; // eslint-disable-line
+    const image2 = md.embeds?.at(1)!; // eslint-disable-line
+    expect(image1).to.be.like({
+      link: "embedded-image-without-link-text.png",
+      original: "![[embedded-image-without-link-text.png]]",
+    });
+    const image1Str = file.contents.substring(
+      image1.position.start.offset,
+      image1.position.end.offset,
+    );
+    expect(image1Str).to.equal("![[embedded-image-without-link-text.png]]");
+    // ![[inline-image.png|with link text]]
+    expect(image2).to.be.like({
+      link: "inline-image.png",
+      original: "![[inline-image.png|with link text]]",
+      displayText: "with link text",
+    });
+    const image2Str = file.contents.substring(
+      image2.position.start.offset,
+      image2.position.end.offset,
+    );
+    expect(image2Str).to.equal("![[inline-image.png|with link text]]");
   });
 });
 
