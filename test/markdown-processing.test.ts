@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import {
-  createGatewayStub as createGatewayStubWithDefaults,
+  createGatewayStubWithDefaults,
   createPublisher,
   FakeApp,
   FakeFile,
@@ -126,5 +126,31 @@ describe("Link resolution", () => {
     gateway.updateArticle.should.have.been.calledOnce;
     const data = gateway.updateArticle.firstCall.args[0];
     data.article.markdown.should.equal("Line2: File2\nLine3: File3");
+  });
+});
+
+describe("Image resolution", () => {
+  it("Maps mapped a mapped image to markdown image link", async () => {
+    const fakeApp = new FakeApp();
+    const gateway = createGatewayStubWithDefaults();
+    const publisher = createPublisher(fakeApp, gateway);
+    const file = fakeApp.fileManager.createFakeFile({
+      contents: "A file with ![[embedded-image.png]] in it",
+      frontmatter: {
+        "dev-article-id": 42,
+        "dev-image-map": [
+          {
+            imageFile: "[[embedded-image.png]]",
+            publicUrl: "https://example.com/image.png",
+          },
+        ],
+      },
+    });
+    await publisher.publish(file);
+    gateway.updateArticle.should.have.been.calledOnce;
+    const data = gateway.updateArticle.firstCall.args[0];
+    data.article.markdown.should.equal(
+      "A file with ![embedded-image.png](https://example.com/image.png) in it",
+    );
   });
 });

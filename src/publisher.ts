@@ -140,11 +140,47 @@ export default class Publisher<TFile extends { path: string }> {
     return tmp.flat();
   }
 
+  processImages(_file: TFile, md: CachedMetadata | null): ReplaceInstruction[] {
+    if (!md?.embeds) {
+      return [];
+    }
+    const frontmatter = md.frontmatter;
+    const imageMap = frontmatter && frontmatter[ARTICLE_IMAGE_MAP_KEY];
+    const getExistingMap = (file: string) => {
+      return (
+        isMapping(imageMap) &&
+        imageMap.find((x) => x.imageFile === `[[${file}]]`)?.publicUrl
+      );
+    };
+
+    return md.embeds.flatMap((embed): ReplaceInstruction[] => {
+      const publicUrl = getExistingMap(embed.link);
+      const displayText = embed.displayText || embed.link;
+      const { start, end } = embed.position;
+      return publicUrl
+        ? [
+            {
+              replaceString: `![${displayText}](${publicUrl})`,
+              from: start.offset,
+              to: end.offset,
+            },
+          ]
+        : [];
+    });
+  }
+
   async generateMarkdown(file: TFile) {
     const originalContents = await this.vault.read(file);
     const metadataCache = this.app.metadataCache.getFileCache(file);
     const frontmatter = metadataCache?.frontmatter || {};
-    const replaceInstructions = await this.processLinks(file, metadataCache);
+    const markdownLinkReplaceInstructions = await this.processLinks(
+      file,
+      metadataCache,
+    );
+    const imageEmbedsReplaceInstructions = this.processImages(
+      file,
+      metadataCache,
+    );
     const h1 = metadataCache?.headings?.find((x) => x.level === 1);
     const h1Instructions = h1
       ? [
@@ -157,20 +193,24 @@ export default class Publisher<TFile extends { path: string }> {
       : [];
 
     if (frontmatter["dev-enable-mathjax"]) {
-      replaceInstructions.splice(
-        replaceInstructions.length,
+      markdownLinkReplaceInstructions.splice(
+        markdownLinkReplaceInstructions.length,
         0,
         ...processInlineMathJax(originalContents),
       );
-      replaceInstructions.splice(
-        replaceInstructions.length,
+      markdownLinkReplaceInstructions.splice(
+        markdownLinkReplaceInstructions.length,
         0,
         ...processBlockMathJax(originalContents),
       );
     }
 
     const dataAfterHeading = this.applyReplaceInstruction(
-      [h1Instructions, replaceInstructions].flat(),
+      [
+        h1Instructions,
+        markdownLinkReplaceInstructions,
+        imageEmbedsReplaceInstructions,
+      ].flat(),
       originalContents,
     );
     const frontmatterInfo =

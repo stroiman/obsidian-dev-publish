@@ -32,6 +32,11 @@ describe("getMetadata", () => {
       ]);
     });
 
+    it("Doesn't detect embeds", () => {
+      const links = getLinks("start ![[Embed]] end");
+      expect(links).to.be.empty;
+    });
+
     it("Returns the right for links with alias", () => {
       const links = getLinks("start [[Link|Alias]] end");
       expect(links).to.be.like([
@@ -123,7 +128,6 @@ text.
         image1.position.end.offset,
       );
       expect(image1Str).to.equal("![[embedded-image-without-link-text.png]]");
-      // ![[inline-image.png|with link text]]
       expect(image2).to.be.like({
         link: "inline-image.png",
         original: "![[inline-image.png|with link text]]",
