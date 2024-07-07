@@ -92,6 +92,8 @@ export default class Publisher<TFile extends { path: string }> {
     const flattened = replaceInstructions.filter(
       (x) => !replaceInstructions.find((y) => x.from > y.from && x.to < y.to),
     );
+    flattened.sort((a, b) => a.from - b.from);
+    // console.log("Replace instructions", flattened);
 
     const result = flattened.reduce(
       (prev, curr) => {

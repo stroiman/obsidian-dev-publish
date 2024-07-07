@@ -135,7 +135,7 @@ describe("Image resolution", () => {
     const gateway = createGatewayStubWithDefaults();
     const publisher = createPublisher(fakeApp, gateway);
     const file = fakeApp.fileManager.createFakeFile({
-      contents: "A file with ![[embedded-image.png]] in it",
+      contents: "A file with ![[embedded-image.png|an embedded image]] in it",
       frontmatter: {
         "dev-article-id": 42,
         "dev-image-map": [
@@ -150,7 +150,7 @@ describe("Image resolution", () => {
     gateway.updateArticle.should.have.been.calledOnce;
     const data = gateway.updateArticle.firstCall.args[0];
     data.article.markdown.should.equal(
-      "A file with ![embedded-image.png](https://example.com/image.png) in it",
+      "A file with ![an embedded image](https://example.com/image.png) in it",
     );
   });
 });

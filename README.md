@@ -180,25 +180,26 @@ I need to explain more about [medialinks](http://example.com/medialink).
 p.s. I have not tested how this works, if you have configured Obsidian to use
 markdown links instead of medialinks.
 
-## Missing features
+> [!WARNING] 
+> This feature does not work for medialinks in a footnote due to a [bug in the
+> Obsidian API](https://github.com/obsidianmd/obsidian-api/issues/166).
+
+## Desired features
 
 ### Essential
 
-- Handle images.
-- Allows the user to specify tags (the DEV tags would probably be kept separate
-  from Obsidian tags initially, but perhaps user configurable over time).
-- Securely handle API keys through system keychain/secure storage (although some
+* Securely handle API keys through system keychain/secure storage (although some
   research seems to indicate that this is not possible).
+* Better image handling. DEV doesn't support image upload through the API,
+  requiring you to upload them manually, and configure the mapping in the
+  frontmatter.
+  * One possibility is to upload to another site, or AWS S3 instead.
+* Control published state from Obsidian. Right now, new articles are created as
+  draft, allowing you to control everything before publishing.
+* Suggestion from @Rooyca: Autopublish - configurable by the user
 
 So unfortunately, one essential feature seems to be impossible, let me know if
 you happen to know how a way to securely handle secrets from Obsidian plugins.
-
-### Nice to have
-
-- Control published state from Obsidian. Right now, new articles are created as
-  draft, allowing you to control everything before publishing.
-- Suggestion from @Rooyca: Autopublish - configurable by the user
-
 
 ## Filing a bug report
 
