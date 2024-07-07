@@ -1,3 +1,12 @@
+## [0.11.1](https://github.com/stroiman/obsidian-dev-publish/compare/0.11.0...0.11.1) (2024-07-07)
+
+
+### Bug Fixes
+
+* Image upload works when mixed within links ([20da9f6](https://github.com/stroiman/obsidian-dev-publish/commit/20da9f66f0d8c0cae1b36b2425d5df9c47399a5a))
+
+
+
 # [0.11.0](https://github.com/stroiman/obsidian-dev-publish/compare/0.10.0...0.11.0) (2024-07-06)
 
 
