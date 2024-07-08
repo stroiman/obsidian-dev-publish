@@ -1,3 +1,12 @@
+## [0.11.2](https://github.com/stroiman/obsidian-dev-publish/compare/0.11.1...0.11.2) (2024-07-08)
+
+
+### Bug Fixes
+
+* Handle medialinks in footnotes ([1f8b78d](https://github.com/stroiman/obsidian-dev-publish/commit/1f8b78db662882cca7a74ee58c8a63017baf79bf))
+
+
+
 ## [0.11.1](https://github.com/stroiman/obsidian-dev-publish/compare/0.11.0...0.11.1) (2024-07-07)
 
 
