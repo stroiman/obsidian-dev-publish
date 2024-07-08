@@ -1,11 +1,14 @@
 import { expect } from "chai";
+import sinon from "sinon";
 import {
   createGatewayStubWithDefaults,
   createPublisher,
   FakeApp,
   FakeFile,
+  FakeMetadataCache,
 } from "./fakes";
 import Publisher from "src/publisher";
+import { CachedMetadata } from "src/interfaces";
 
 describe("Mathjax resolution", () => {
   let fakeApp: FakeApp;
@@ -87,8 +90,27 @@ c = \\pm\\sqrt{a^2 + b^2}
 });
 
 describe("Link resolution", () => {
+  let fakeApp: FakeApp;
+
+  beforeEach(() => {
+    fakeApp = new FakeApp();
+    // Ths following simulates a bug in Obsidian. Should be able to remove this
+    // when the bug has been fixed in Obsidian.
+    // https://github.com/obsidianmd/obsidian-api/issues/166
+    sinon
+      .stub(fakeApp.metadataCache, "getFileCache")
+      .callsFake(function (file) {
+        const result: CachedMetadata =
+          FakeMetadataCache.prototype.getFileCache.bind(this)(file);
+        if (result.links) {
+          const links = [...result.links, ...result.links];
+          return { ...result, links };
+        }
+        return result;
+      });
+  });
+
   it("Should replace valid medialinks with URLs", async () => {
-    const fakeApp = new FakeApp();
     const fileToPublish = fakeApp.fileManager.createFakeFile({
       frontmatter: { "dev-article-id": 42 },
     });
@@ -114,7 +136,6 @@ describe("Link resolution", () => {
   });
 
   it("Should play nice with title replacement", async () => {
-    const fakeApp = new FakeApp();
     const fileToPublish = fakeApp.fileManager.createFakeFile({
       frontmatter: { "dev-article-id": 42 },
     });

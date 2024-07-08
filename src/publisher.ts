@@ -139,7 +139,15 @@ export default class Publisher<TFile extends { path: string }> {
         ];
       }),
     );
-    return tmp.flat();
+    const flattened = tmp.flat();
+    // Remove duplicates - necessary until this is fixed:
+    // https://github.com/obsidianmd/obsidian-api/issues/166
+    return flattened.filter((value, index) => {
+      const firstIndexOfSameValue = flattened.findIndex((search) => {
+        return search.from === value.from && search.to === value.to;
+      });
+      return firstIndexOfSameValue === index;
+    });
   }
 
   processImages(_file: TFile, md: CachedMetadata | null): ReplaceInstruction[] {
