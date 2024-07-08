@@ -21,12 +21,29 @@ export type Json = string | number | boolean | null | Json[] | JsonObject;
 
 type ReplaceInstruction = { from: number; to: number; replaceString: string };
 
+export const replaceInstructionsEqual = (
+  a: ReplaceInstruction,
+  b: ReplaceInstruction,
+) => a.from === b.from && a.to === b.to && a.replaceString === b.replaceString;
+
 const isImageMap = (input: unknown) =>
   isObject(input, {
     publicUrl: isString,
     imageFile: isString,
   });
 const isMapping = (input: unknown) => isArray(input, isImageMap);
+
+const removeDuplicateReplaceInstructions = (
+  instructions: ReplaceInstruction[],
+) => {
+  return instructions.filter(
+    (value, index) =>
+      index ===
+      instructions.findIndex((search) =>
+        replaceInstructionsEqual(value, search),
+      ),
+  );
+};
 
 const processInlineMathJax = (jax: string): ReplaceInstruction[] => {
   const matches = [...jax.matchAll(/(\${1})([^\n$]+)\1/g)];
@@ -120,8 +137,8 @@ export default class Publisher<TFile extends { path: string }> {
     if (!links) {
       return [];
     }
-    const tmp = await Promise.all(
-      links.map(async (link) => {
+    const replaceInstructions = links
+      .map((link) => {
         const targetFile = this.app.metadataCache.getFirstLinkpathDest(
           link.link,
           file.path,
@@ -137,17 +154,11 @@ export default class Publisher<TFile extends { path: string }> {
             replaceString,
           },
         ];
-      }),
-    );
-    const flattened = tmp.flat();
+      })
+      .flat();
     // Remove duplicates - necessary until this is fixed:
     // https://github.com/obsidianmd/obsidian-api/issues/166
-    return flattened.filter((value, index) => {
-      const firstIndexOfSameValue = flattened.findIndex((search) => {
-        return search.from === value.from && search.to === value.to;
-      });
-      return firstIndexOfSameValue === index;
-    });
+    return removeDuplicateReplaceInstructions(replaceInstructions);
   }
 
   processImages(_file: TFile, md: CachedMetadata | null): ReplaceInstruction[] {
