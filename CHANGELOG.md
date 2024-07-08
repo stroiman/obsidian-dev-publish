@@ -25,9 +25,6 @@
 * Update metadata when sending updates ([0468de8](https://github.com/stroiman/obsidian-dev-publish/commit/0468de8fb935d60d47bd55d1a726b8017573e7f4))
 
 
-
-# Changelog
-
 ## [0.10.0](https://github.com/stroiman/obsidian-dev-publish/compare/0.9.0...0.10.0)
 
 # Bugfixes
