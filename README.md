@@ -183,6 +183,7 @@ markdown links instead of medialinks.
 > [!WARNING] 
 > This feature does not work for medialinks in a footnote due to a [bug in the
 > Obsidian API](https://github.com/obsidianmd/obsidian-api/issues/166).
+> "Fixed" in version 0.11.2 of this plugin
 
 ## Desired features
 
