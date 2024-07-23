@@ -65,7 +65,7 @@ export const getEmbeds = (data: string): EmbedCache[] => {
   return matches.map((match) => {
     const start = match.index;
     const end = match[0].length + start;
-    const { link, displayText } = match.groups!; // eslint-disable-line
+    const { link, displayText } = match.groups!;
     if (!displayText) {
       return {
         link: link,

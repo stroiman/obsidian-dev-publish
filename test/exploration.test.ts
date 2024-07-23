@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint no-console: "off" */
 import { fetchRequestUrlWrapper } from "./obsidian-wrappers";
 
 /*
@@ -92,7 +92,6 @@ describe("Post to dev, using a fetch->requestUrl wrapper for feedback", () => {
       contentType: "application/json",
     });
     const response_body = await response.json;
-    // eslint-disable-next-line
     console.log(response_body);
   });
 
