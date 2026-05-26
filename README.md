@@ -6,13 +6,7 @@ Obsidian plugin that allows you to publish notes as articles on DEV (https://dev
 > Articles are created in a draft state on DEV, so you can properly review them
 > before making them public.
 
-> [!CAUTION]
-> This plugin stores your DEV api key unencrypted in the plugin configuration
-> file, stored as part of your obsidian vault. If you don't fully understand the
-> implications of this, don't use this plugin.
 >
-> This is important, I will repeat: Don't use this plugin if you don't fully
-> understand the security implications!
 
 ## Implemented features
 
@@ -21,7 +15,8 @@ Obsidian plugin that allows you to publish notes as articles on DEV (https://dev
 - Title of the article is the first H1 heading in the not.
 - Body of the article is everything _after_ the first H1 in the note.
 - Resolve the `url` metadata of linked attributes.
-- After creating a note, add a link in the frontmatter
+- After creating a note, add a link in the frontmatter.
+- Securely store API keys through Obsidian's native SecretStorage API (system keychain).
 
 ## Usage
 
@@ -189,8 +184,6 @@ markdown links instead of medialinks.
 
 ### Essential
 
-* Securely handle API keys through system keychain/secure storage (although some
-  research seems to indicate that this is not possible).
 * Better image handling. DEV doesn't support image upload through the API,
   requiring you to upload them manually, and configure the mapping in the
   frontmatter.
@@ -198,9 +191,6 @@ markdown links instead of medialinks.
 * Control published state from Obsidian. Right now, new articles are created as
   draft, allowing you to control everything before publishing.
 * Suggestion from @Rooyca: Autopublish - configurable by the user
-
-So unfortunately, one essential feature seems to be impossible, let me know if
-you happen to know how a way to securely handle secrets from Obsidian plugins.
 
 ## Filing a bug report
 
