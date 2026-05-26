@@ -6,23 +6,24 @@ import {
   PluginSettingTab,
   requestUrl,
   sanitizeHTMLToDom,
-  Setting,
+  SecretComponent,
+  Setting
 } from "obsidian";
 import { TheDialogController } from "src/image-mapping-dialog";
 import MediumGateway from "src/medium-gateway";
 import { GetFrontMatterInfo } from "src/obsidian-implementations";
 import Publisher from "src/publisher";
 
-interface DevPublishPluginSessings {
+interface DevPublishPluginSettings {
   apiKey: string;
 }
 
-const DEFAULT_SETTINGS: DevPublishPluginSessings = {
+const DEFAULT_SETTINGS: DevPublishPluginSettings = {
   apiKey: "",
 };
 
 export default class DevPublishPlugin extends Plugin {
-  settings: DevPublishPluginSessings;
+  settings: DevPublishPluginSettings;
 
   async onload() {
     await this.loadSettings();
@@ -34,9 +35,11 @@ export default class DevPublishPlugin extends Plugin {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (view && view.file) {
           if (!checking) {
+            const apiKey = this.getApiKey();
+            if (!apiKey) return;
             const publisher = new Publisher(
               this.app,
-              new MediumGateway(this.settings.apiKey, requestUrl),
+              new MediumGateway(apiKey, requestUrl),
               new GetFrontMatterInfo(),
             );
             publisher.mapImages(view.file, new TheDialogController(this.app));
@@ -52,9 +55,11 @@ export default class DevPublishPlugin extends Plugin {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (view && view.file) {
           if (!checking) {
+            const apiKey = this.getApiKey();
+            if (!apiKey) return;
             const publisher = new Publisher(
               this.app,
-              new MediumGateway(this.settings.apiKey, requestUrl),
+              new MediumGateway(apiKey, requestUrl),
               new GetFrontMatterInfo(),
             );
             publisher.publish(view.file).then(
@@ -88,6 +93,15 @@ export default class DevPublishPlugin extends Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
   }
+
+  getApiKey(): string | null {
+    const apiKey = this.app.secretStorage.getSecret(this.settings.apiKey) || "";
+    if (!apiKey || apiKey.trim() === "") {
+      new Notice("DEV Publish: API key is missing. Please check your plugin settings.");
+      return null;
+    }
+    return apiKey;
+  }
 }
 
 class DevPublishSettingTab extends PluginSettingTab {
@@ -107,17 +121,16 @@ class DevPublishSettingTab extends PluginSettingTab {
       .setName("API key")
       .setDesc(
         sanitizeHTMLToDom(
-          "<b>Security warning!</b><br />This will be stored unencrypted in your obsidian plugin folder. Do not use this plugin if you do not fully understand the security implications of this.",
+          "Select or enter your DEV.to API key.",
         ),
       )
-      .addText((text) =>
-        text
-          .setPlaceholder("Enter your secret")
-          .setValue(this.plugin.settings.apiKey)
-          .onChange(async (value) => {
-            this.plugin.settings.apiKey = value;
-            await this.plugin.saveSettings();
-          }),
-      );
+      .addComponent((el) => 
+				new SecretComponent(this.app, el)
+					.setValue(this.plugin.settings.apiKey)
+					.onChange(async (value) => {
+						this.plugin.settings.apiKey = value;
+						await this.plugin.saveSettings();
+					})
+			);
   }
 }
